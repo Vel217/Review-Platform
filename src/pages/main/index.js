@@ -1,4 +1,3 @@
-import Item from "@/components/commentsList/Item";
 import React, { useMemo, useState } from "react";
 
 function Index() {
@@ -87,7 +86,6 @@ function Index() {
             <div className="flex justify-between">
               <div>likes</div>
               <div>Comments</div>
-              <Item />
             </div>
           </li>
         ))}

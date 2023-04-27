@@ -20,15 +20,53 @@ const listComments = [
     data: "12.04.2022",
   },
 ];
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+
 function Item() {
   const [textarea, setTextarea] = useState("");
+  // const [review, setReview] = useState('')
+  const item = {
+    id: 1,
+    title: "review of titanic",
+    film: "titanic",
+    text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.",
+    group: "positive",
+    rating: "4",
+    author: "lera",
+    data: "12.04.2022",
+  };
+
   return (
     <>
-      <div className="flex  w-full justify-center ">
-        <ul role="list" className="space-y-3 w-1/2">
+      <div className="flex  w-full justify-center items-center flex-col">
+        <div
+          className={`px-4 h-auto flex  w-2/3 lg:w-2/3 py-4 shadow sm:rounded-md sm:px-6 flex-col my-3 ${
+            item.group === "neutral"
+              ? "bg-slate-100"
+              : item.group === "positive"
+              ? "bg-green-100"
+              : "bg-red-100"
+          }`}
+        >
+          <h1 className="text-2xl">{item.film} film </h1>
+          <p>Author: {item.author}</p>
+          <div className="grow flex flex-col">
+            <div className="flex justify-between">
+              <p>{item.title}title</p>
+            </div>
+            <div className="border-0 h-auto  rounded-md shadow p-3 my-3 bg-white">
+              <p className="h-auto">{item.text}text</p>
+            </div>
+            <div className="flex justify-between">
+              <div>rating{item.rating}</div>
+              <div className="text-slate-600">{item.data} data</div>
+            </div>
+          </div>
+          <div className="flex justify-between"></div>
+        </div>
+        <ul
+          role="list"
+          className="border border-1 rounded-md  shadow p-2 space-y-3 w-2/3 lg:w-2/3   p-5"
+        >
           {listComments.map((item) => (
             <li
               key={item.id}
@@ -44,7 +82,7 @@ function Item() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  class="  rounded-md bg-red-100 px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-200"
+                  className="  rounded-md bg-red-100 px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-200"
                 >
                   Delete
                 </button>

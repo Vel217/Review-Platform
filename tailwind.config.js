@@ -15,7 +15,6 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms", "@tailwindcss/aspect-ratio"),
-    require("@tailwindcss/line-clamp"),
+    require("@tailwindcss/forms", "@tailwindcss/aspect-ratio", "@tailwindcss/line-clamp"),
   ],
 };
