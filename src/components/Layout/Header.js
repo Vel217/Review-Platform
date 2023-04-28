@@ -55,8 +55,8 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 }));
 
 const navigation = [
-  { name: "Main", href: "#" },
-  { name: "My Page", href: "#" },
+  { name: "Main", href: "/main" },
+  { name: "My Page", href: "/myPage" },
 ];
 
 function Header() {
@@ -68,13 +68,13 @@ function Header() {
         <nav className="mx-auto w-screen lg:px-8" aria-label="Global">
           <div className="hidden lg:flex lg:justify-between lg: items-center lg:gap-x-12">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className="text-md w-1/8 text-gray-900 px-3"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
             <input
               type="text"
