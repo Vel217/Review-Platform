@@ -1,6 +1,6 @@
 import { Dialog } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import Image from "next/image";
+import Link from "next/link";
 import { styled } from "@mui/material/styles";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
@@ -99,9 +99,9 @@ function Header() {
                 className="m-0"
               />
             </div>
-            <a href="#" className="text-md text-gray-900">
+            <Link href="/" className="text-md text-gray-900">
               Log in <span aria-hidden="true">&rarr;</span>
-            </a>
+            </Link>
           </div>
           <div className="flex lg:hidden">
             <button
@@ -145,12 +145,12 @@ function Header() {
                 </div> */}
               </a>
               <div className="flex flex-1 justify-end">
-                <a
+                <Link
                   href="#"
                   className="text-sm font-semibold leading-6 text-gray-900"
                 >
                   Log in <span aria-hidden="true">&rarr;</span>
-                </a>
+                </Link>
               </div>
             </div>
             <div className="mt-6 space-y-2">
