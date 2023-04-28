@@ -27,7 +27,6 @@ export const authOptions = {
           image: profile.avatar_url,
         };
       },
-      version: "2.0",
     }),
   ],
   callbacks: {
