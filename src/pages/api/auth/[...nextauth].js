@@ -19,14 +19,15 @@ export const authOptions = {
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID,
       clientSecret: process.env.TWITTER_CLIENT_SECRET,
-      profile(profile) {
-        return {
-          id: profile.id.toString(),
-          name: profile.name || profile.login,
-          email: profile.email,
-          image: profile.avatar_url,
-        };
-      },
+      callbackUrl: `${process.env.NEXTAUTH_URL}/api/auth/callback/twitter`,
+      //   profile(profile) {
+      //     return {
+      //       id: profile.id.toString(),
+      //       name: profile.name || profile.login,
+      //       email: profile.email,
+      //       image: profile.avatar_url,
+      //     };
+      //   },
     }),
   ],
   callbacks: {
