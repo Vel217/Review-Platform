@@ -8,11 +8,11 @@ export default function Home() {
   if (session) {
     return (
       <>
-        Signed in as {session.user.email} <br />
+        Signed in as {session.user.name} <br />
         <button
           className="rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          onClick={async () => {
-            await signIn();
+          onClick={() => {
+            signOut();
           }}
         >
           Sign out
@@ -25,8 +25,8 @@ export default function Home() {
       Not signed in <br />
       <button
         className="rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        onClick={async () => {
-          await signIn();
+        onClick={() => {
+          signIn();
         }}
       >
         Sign in
