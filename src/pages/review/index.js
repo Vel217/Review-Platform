@@ -2,46 +2,10 @@ import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
-import dynamic from "next/dynamic";
 import { useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-
-const modules = {
-  toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
-    [{ size: [] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [
-      { list: "ordered" },
-      { list: "bullet" },
-      { indent: "-1" },
-      { indent: "+1" },
-    ],
-    ["link"],
-    ["clean"],
-  ],
-  clipboard: {
-    matchVisual: false,
-  },
-};
-
-const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-];
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
@@ -50,7 +14,6 @@ function Review() {
   const [rating, setRating] = useState(0);
   const [nameOfReview, setNameOfReview] = useState("");
   const [group, setGroup] = useState("");
-  const [quill, setQuill] = useState("");
   const { t } = useTranslation();
 
   // const [tagCloud, setTagCloud] = useState([]);
@@ -195,7 +158,7 @@ function Review() {
                   }}
                 />
               </div>
-              <div className="w-1/2 block  rounded-md border-0 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+              <div className="w-1/2 block  rounded-md border-0 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 <article class="prose prose-sm">
                   <ReactMarkdown>{textComment}</ReactMarkdown>
                 </article>

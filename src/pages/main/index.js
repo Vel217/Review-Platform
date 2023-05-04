@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 
-import movieFilm from "../../../public/asserts/movie-film2.png";
+import movieFilm from "../../../public/assets/images/movie-film2.png";
 import Link from "next/link";
 
 function Index() {
@@ -66,7 +66,7 @@ function Index() {
                 >
                   <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
                     <img
-                      src={post.imageUrl !== "" ? post.imageUrl : movieFilm}
+                      src={post.imageUrl !== "" ? post.imageUrl : movieFilm.src}
                       alt=""
                       className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
                     />
