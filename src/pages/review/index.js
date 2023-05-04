@@ -5,6 +5,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -41,6 +42,8 @@ const formats = [
   "indent",
   "link",
 ];
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useTranslation } from "next-i18next";
 
 function Review() {
   const [film, setFilm] = useState("");
@@ -48,6 +51,7 @@ function Review() {
   const [nameOfReview, setNameOfReview] = useState("");
   const [group, setGroup] = useState("");
   const [quill, setQuill] = useState("");
+  const { t } = useTranslation();
 
   // const [tagCloud, setTagCloud] = useState([]);
   const tagCloud = [
@@ -62,6 +66,7 @@ function Review() {
 
   const [files, setFile] = useState([]);
   const [message, setMessage] = useState();
+  const [textComment, setTextComment] = useState("");
   const handleFile = (e) => {
     setMessage("");
     let file = e.target.files;
@@ -83,10 +88,12 @@ function Review() {
     <>
       <div className="flex flex-col  mt-5 w-full items-center mb-5">
         <h2 className="text-base text-center font-semibold leading-7 ">
-          ADD new review
+          {t("review:addNewRev")}
         </h2>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Name of movie</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {t("review:nameOfMovie")}
+          </div>
           <div className=" flex gap-5 px-4 py-5 sm:p-6 ">
             <Autocomplete
               freeSolo
@@ -112,12 +119,14 @@ function Review() {
               // onClick={click}
               className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
             >
-              Add new film
+              {t("review:addNewFilm")}
             </button>
           </div>
         </div>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Name of review</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {t("review:nameOfRev")}
+          </div>
           <div className="px-4 py-5 sm:p-6">
             <input
               type="text"
@@ -128,7 +137,9 @@ function Review() {
         </div>
 
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Group of review</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {t("review:groupOfReview")}
+          </div>
           <div className="px-4 py-5 sm:p-6">
             <select
               name="location"
@@ -137,15 +148,17 @@ function Review() {
               }}
               className="mt-2 block w-1/2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
             >
-              <option value="Positive">Positive</option>
-              <option value="Neutral">Neutral</option>
-              <option value="Negative">Negative</option>
+              <option value="Positive">{t("review:positive")}</option>
+              <option value="Neutral">{t("review:neutral")}</option>
+              <option value="Negative">{t("review:negative")}</option>
             </select>
           </div>
         </div>
 
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Tag of review</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {t("review:tagOfReview")}
+          </div>
           <div className="px-4 py-5 sm:p-6">
             <Autocomplete
               multiple
@@ -165,29 +178,35 @@ function Review() {
           </div>
         </div>
 
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3  rounded-lg bg-white shadow  overflow-auto">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3  rounded-lg bg-white shadow ">
           <div className="px-4 py-5 sm:px-6 font-bold justify-start">
-            Text of review
+            {t("review:textOfReview")}
           </div>
           <div className="px-4 py-5 sm:p-6">
-            <div className="min-h-full flex flex-col px-4 py-3 sm:py-4">
-              <ReactQuill
-                className="text-black h-80 mb-5"
-                modules={modules}
-                formats={formats}
-                theme="snow"
-                value={quill}
-                onChange={(value) => {
-                  setQuill(value);
-                }}
-              />
+            <div className="min-h-full flex gap-2 px-4 py-3 sm:py-4">
+              <div className="w-1/2 ">
+                <textarea
+                  rows={8}
+                  className="block w-full resize-none rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  defaultValue={""}
+                  value={textComment}
+                  onChange={(ev) => {
+                    setTextComment(ev.target.value);
+                  }}
+                />
+              </div>
+              <div className="w-1/2 block  rounded-md border-0 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                <article class="prose prose-sm">
+                  <ReactMarkdown>{textComment}</ReactMarkdown>
+                </article>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow px-6 py-4">
           <div className="px-4 py-5 sm:px-6 font-bold">
-            You can add picture for review
+            {t("review:addPic")}
           </div>
 
           <span className="flex justify-center items-center bg-white text-[12px] mb-1 text-red-500">
@@ -244,7 +263,9 @@ function Review() {
         </div>
 
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow mb-5">
-          <div className="px-4 py-5 sm:px-6 font-bold">Rating</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {t("review:rating")}
+          </div>
           <div className="px-4 py-5 sm:p-6">
             <Rating
               name="customized-10"
@@ -264,7 +285,7 @@ function Review() {
           type="button"
           className="rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Send review
+          {t("review:submit")}
         </button>
       </div>
     </>
@@ -272,3 +293,11 @@ function Review() {
 }
 
 export default Review;
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["review", "common"])),
+    },
+  };
+}

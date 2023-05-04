@@ -1,40 +1,40 @@
 import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link";
-
-// const inter = Inter({ subsets: ["latin"] });
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useTranslation } from "next-i18next";
 
 export default function Home() {
   const { data: session } = useSession();
-  console.log(session);
+  const { t } = useTranslation();
+
   if (session) {
     return (
       <>
-        Signed in as {session.user.name} <br />
+        {t("home:signInAs")} {session.user.name} <br />
         <button
-          className="rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="rounded bg-indigo-600 dark:bg-slate-400 px-2 py-1 text-sm font-semibold text-white dark:text-black shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           onClick={() => {
             signOut();
           }}
         >
-          Sign out
+          {t("home:signOut")}
         </button>
       </>
     );
   }
   return (
     <>
-      <h2 className="text-center mb-8 mt-32 text-2xl font-bold leading-9 tracking-tight text-gray-900">
-        Sign in to your account
+      <h2 className="text-center mb-8 mt-32 text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-black">
+        {t("home:signAccount")}
       </h2>
       <div className="flex flex-col justify-center items-center  w-full mb-32">
         <div className="w-1/2 border-1 rounded-md shadow-md p-5 bg-slate-50">
           <div className="flex  justify-center items-center ">
             <Link
-              className="rounded bg-sky-500 px-2 py-1 text-xl font-semibold text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+              className="rounded bg-sky-500  px-2 py-1 text-xl font-semibold text-white  dark:text-black shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
               href="/main"
             >
-              {" "}
-              I just want to watch
+              {t("home:wantWatch")}
             </Link>
           </div>
           <div className="my-10">
@@ -46,8 +46,8 @@ export default function Home() {
                 <div className="w-full border-t border-gray-200" />
               </div>
               <div className="relative flex justify-center text-sm font-medium leading-6">
-                <span className="bg-slate-50 px-6 text-gray-500">
-                  Continue with Twitter or Github
+                <span className="bg-slate-50   px-6 text-gray-500  dark:text-black">
+                  {t("home:continue")}
                 </span>
               </div>
             </div>
@@ -55,9 +55,9 @@ export default function Home() {
           <div className="flex flex-col justify-center items-center  sm:px-6 lg:flex-none lg:px-20 xl:px-24">
             <div className="mx-auto w-full max-w-sm lg:w-96">
               <div className=" flex justify-center text-md font-medium leading-6">
-                <span className="bg-slate-50 px-6 text-gray-900 flex items-center flex-col">
+                <span className="bg-slate-50  dark:bg-slate-400  text-gray-900  dark:text-black flex items-center flex-col">
                   <button
-                    className=" flex gap-5 rounded bg-sky-500 px-2 py-2 font-thin text-xl  text-white shadow-sm hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+                    className=" flex gap-5 rounded bg-sky-500  px-3 py-2 font-thin text-xl  text-white shadow-sm  dark:text-black hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
                     onClick={() => {
                       signIn();
                     }}
@@ -92,4 +92,12 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["home", "common"])),
+    },
+  };
 }

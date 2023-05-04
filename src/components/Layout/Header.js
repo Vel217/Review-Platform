@@ -4,8 +4,12 @@ import Link from "next/link";
 import { styled } from "@mui/material/styles";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
+import { useSession, signIn, signOut } from "next-auth/react";
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/router";
+
+import { useTranslation } from "next-i18next";
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   width: 62,
@@ -54,62 +58,137 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-const navigation = [
-  { name: "Main", href: "/main" },
-  { name: "My Page", href: "/myPage" },
-];
-
 function Header() {
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  const { t } = useTranslation();
+
+  const [currentLang, setCurrentLang] = useState(router.locale);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeLanguage, setActiveLanguage] = useState("");
+  const [isDark, setIsDark] = useState(false);
+  const changeLang = (lang) => {
+    const currentPath = router.asPath;
+    const newPath = currentPath.replace(`/${currentLang}`, `/${lang}`);
+    router.push(newPath, newPath, { locale: lang });
+  };
+
+  useEffect(() => {
+    setCurrentLang(router.locale);
+  }, [router.locale]);
+
+  const handleLangChange = (event) => {
+    const lang = event.target.value;
+    changeLang(lang);
+  };
+  const toggleChecked = (checked) => {
+    setIsDark(checked);
+
+    if (checked) {
+      document.body.classList.add("dark");
+      document.body.classList.remove("light");
+    } else {
+      document.body.classList.add("light");
+      document.body.classList.remove("dark");
+    }
+  };
+
   return (
     <>
-      <header className="bg-white">
+      <header className="bg-white dark:bg-black shrink-0">
         <nav className="mx-auto w-screen lg:px-8" aria-label="Global">
           <div className="hidden lg:flex lg:justify-between lg: items-center lg:gap-x-12">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="text-md w-1/8 text-gray-900 px-3"
-              >
-                {item.name}
-              </Link>
-            ))}
+            <Link
+              href="/main"
+              className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
+            >
+              {t("common:main")}
+            </Link>
+            <Link
+              href="/myPage"
+              className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
+            >
+              {t("common:myPage")}
+            </Link>
+
             <input
               type="text"
               name="name"
               id="name"
-              className="block w-3/5 rounded-full border-0 px-4 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              className="block w-3/5 rounded-full border-0 px-4 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
               placeholder="Search"
             />
             <div className="flex items-center flex-col">
               <select
-                onChange={(ev) => {
-                  setActiveLanguage(ev.target.value);
-                }}
-                className="mt-2 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                onChange={handleLangChange}
+                value={currentLang}
+                className="mt-2 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900  dark:ttext-gray-900 ring-1 ring-inset ring-gray-300  dark:ring-gray-200 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
               >
-                <option>English</option>
-                <option>Russian</option>
-                <option>Spain</option>
+                <option value="en">English</option>
+                <option value="ru">Russian</option>
+                <option value="es">Español</option>
               </select>
+
               <FormControlLabel
-                control={<MaterialUISwitch sx={{ m: 1 }} defaultChecked />}
-                className="m-0"
+                control={
+                  <MaterialUISwitch
+                    sx={{ m: 1 }}
+                    onChange={(ev) => {
+                      toggleChecked(ev.target.checked);
+                    }}
+                    checked={isDark}
+                  />
+                }
+                label="theme"
               />
             </div>
-            <Link href="/" className="text-md text-gray-900">
-              Log in <span aria-hidden="true">&rarr;</span>
+            <Link href="/" className="text-md text-gray-900 dark:text-white ">
+              {session ? (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                    />
+                  </svg>
+                  {t("common:logout")}
+                </>
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-6 h-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                    />
+                  </svg>
+                  {t("common:login")}
+                </>
+              )}
             </Link>
           </div>
           <div className="flex lg:hidden">
             <button
               type="button"
-              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-white"
               onClick={() => setMobileMenuOpen(true)}
             >
-              <span className="sr-only">Open main menu</span>
+              {/* <span className="sr-only">Open main menu</span> */}
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
@@ -121,35 +200,53 @@ function Header() {
           onClose={setMobileMenuOpen}
         >
           <div className="fixed inset-0 z-10" />
-          <Dialog.Panel className="fixed inset-y-0 left-0 z-10 w-full overflow-y-auto bg-white px-6 py-6">
+          <Dialog.Panel className="fixed inset-y-0 left-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 dark:bg-black">
             <div className="flex items-center justify-between">
               <div className="flex flex-1">
                 <button
                   type="button"
-                  className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                  className="-m-2.5 rounded-md p-2.5 text-gray-700 dark:text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <span className="sr-only">Close menu</span>
                   <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                 </button>
               </div>
-              <a href="#" className="-m-1.5 p-1.5">
-                <span className="sr-only">Your Company</span>
-                {/* <div className="h-8 w-auto">
-                  <Image
-                    src="https://tailwindui.com/img/logos/mark.svg"
-                    width="10"
-                    height="10"
-                    alt="alt"
-                  />
-                </div> */}
-              </a>
+
               <div className="flex flex-1 justify-end">
-                <Link
-                  href="#"
-                  className="text-sm font-semibold leading-6 text-gray-900"
-                >
-                  Log in <span aria-hidden="true">&rarr;</span>
+                <Link href="#">
+                  {" "}
+                  {session ? t("common:login") : t("common:logout")}
+                  {session ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-6 h-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-6 h-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                      />
+                    </svg>
+                  )}
                 </Link>
               </div>
             </div>
@@ -157,20 +254,28 @@ function Header() {
               <div className="flex justify-between">
                 <div>
                   <FormControlLabel
-                    control={<MaterialUISwitch sx={{ m: 1 }} defaultChecked />}
-                    label="shift"
+                    control={
+                      <MaterialUISwitch
+                        sx={{ m: 1 }}
+                        onChange={(ev) => {
+                          toggleChecked(ev.target.checked);
+                        }}
+                        checked={isDark}
+                      />
+                    }
+                    label="theme"
                   />
                 </div>
                 <div>
                   <select
                     onChange={(ev) => {
-                      setActiveLanguage(ev.target.value);
+                      changeLang(ev.target.value);
                     }}
-                    className="mt-2 w-32 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="mt-2 w-32 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   >
-                    <option>English</option>
-                    <option>Russian</option>
-                    <option>Spain</option>
+                    <option value="en">English</option>
+                    <option value="ru">Russian</option>
+                    <option value="es">Spain</option>
                   </select>
                 </div>
               </div>
@@ -179,27 +284,26 @@ function Header() {
                 type="text"
                 name="name"
                 id="name"
-                className="block w-full rounded-full border-0 px-4 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="block w-full rounded-full border-0 px-4 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Search"
               />
-              {navigation.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                >
-                  {item.name}
-                </a>
-              ))}
+
+              <Link
+                href="/main"
+                className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white hover:bg-gray-50"
+              >
+                {t("common:main")}
+              </Link>
+              <Link
+                href="/myPage"
+                className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white hover:bg-gray-50"
+              >
+                {t("common:myPage")}
+              </Link>
             </div>
           </Dialog.Panel>
         </Dialog>
       </header>
-      <div className="relative mb-5">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-      </div>
     </>
   );
 }

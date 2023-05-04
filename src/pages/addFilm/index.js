@@ -1,14 +1,20 @@
 import React from "react";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { useTranslation } from "next-i18next";
 
 function NewFilm() {
+  const { t } = useTranslation();
   return (
     <>
       <div className="flex flex-col  mt-5 w-full items-center mb-5">
         <h2 className="text-base text-center font-semibold leading-7 ">
-          ADD new film
+          {t("addFilm:newFilm")}
         </h2>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Name of movie</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {" "}
+            {t("addFilm:name")}
+          </div>
           <div className=" flex gap-5 px-4 py-5 sm:p-6 ">
             <input
               type="text"
@@ -17,7 +23,10 @@ function NewFilm() {
           </div>
         </div>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Year of movie</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {" "}
+            {t("addFilm:year")}
+          </div>
           <div className=" flex gap-5 px-4 py-5 sm:p-6 ">
             <input
               type="text"
@@ -26,7 +35,10 @@ function NewFilm() {
           </div>
         </div>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
-          <div className="px-4 py-5 sm:px-6 font-bold">Director of movie</div>
+          <div className="px-4 py-5 sm:px-6 font-bold">
+            {" "}
+            {t("addFilm:director")}
+          </div>
           <div className=" flex gap-5 px-4 py-5 sm:p-6 ">
             <input
               type="text"
@@ -38,7 +50,7 @@ function NewFilm() {
           type="button"
           className="rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          ADD
+          {t("addFilm:add")}
         </button>
       </div>
     </>
@@ -46,3 +58,11 @@ function NewFilm() {
 }
 
 export default NewFilm;
+
+export async function getStaticProps({ locale }) {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["addFilm", "common"])),
+    },
+  };
+}

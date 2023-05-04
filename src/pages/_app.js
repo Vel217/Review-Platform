@@ -2,11 +2,9 @@ import "@/styles/globals.css";
 import "react-quill/dist/quill.snow.css";
 import Layout from "../components/Layout/Layout";
 import { SessionProvider } from "next-auth/react";
+import { appWithTranslation } from "next-i18next";
 
-export default function App({
-  Component,
-  pageProps: { session, ...pageProps },
-}) {
+const App = ({ Component, pageProps: { session, ...pageProps } }) => {
   return (
     <SessionProvider session={session}>
       <Layout>
@@ -14,4 +12,6 @@ export default function App({
       </Layout>
     </SessionProvider>
   );
-}
+};
+
+export default appWithTranslation(App);
