@@ -7,7 +7,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const authOptions = {
-  secret: process.env.NEXT_PUBLIC_SECRET,
   adapter: PrismaAdapter(prisma),
   providers: [
     GithubProvider({
@@ -20,17 +19,18 @@ export const authOptions = {
       callbackUrl: `${process.env.NEXTAUTH_URL}/api/auth/callback/twitter`,
     }),
   ],
-  callbacks: {
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      return token;
-    },
-    async session({ session, token, user }) {
-      session.accessToken = token.accessToken;
-      return session;
-    },
-  },
+  secret: process.env.NEXT_PUBLIC_SECRET,
+  // callbacks: {
+  //   async jwt({ token, account }) {
+  //     if (account) {
+  //       token.accessToken = account.access_token;
+  //     }
+  //     return token;
+  //   },
+  //   async session({ session, token, user }) {
+  //     session.accessToken = token.accessToken;
+  //     return session;
+  //   },
+  // },
 };
 export default NextAuth(authOptions);
