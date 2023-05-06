@@ -1,0 +1,140 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
+    created_at    DateTime  @default(now())
+    isAdmin       Boolean   @default(false)
+    reviews       Review[]
+    Rating        Rating[]
+    Like          Like[]
+    Comment       Comment[]
+}
+
+model Film {
+    id        Int      @id @default(autoincrement())
+    year      Int
+    title     String
+    category  String
+    director  String
+    createdAt DateTime @default(now())
+    reviews   Review[]
+}
+
+model Review {
+    id         Int      @id @default(autoincrement())
+    reviewName String
+    filmId     Int
+    category   String 
+    authorId   String
+    imageUrl   String
+    content    String   @db.Text
+    stars      Int
+    createdAt  DateTime @default(now())
+
+    author   User       @relation(fields: [authorId], references: [id])
+    film     Film       @relation(fields: [filmId], references: [id])
+    Taggings Taggings[]
+    Like     Like[]
+    Comment  Comment[]
+    Rating   Rating[]
+
+    @@index([filmId], name: "review_film_id")
+    @@index([authorId], name: "review_author_id")
+}
+
+model Rating {
+    id        Int      @id @default(autoincrement())
+    userId    String
+    reviewId  Int
+    stars     Int
+    createdAt DateTime @default(now())
+
+    user   User   @relation(fields: [userId], references: [id])
+    review Review @relation(fields: [reviewId], references: [id])
+}
+
+model Tag {
+    id        Int        @id @default(autoincrement())
+    title     String
+    createdAt DateTime   @default(now())
+    Taggings  Taggings[]
+}
+
+model Taggings {
+    id        Int      @id @default(autoincrement())
+    tagId     Int
+    reviewId  Int
+    createdAt DateTime @default(now())
+
+    tag    Tag    @relation(fields: [tagId], references: [id])
+    review Review @relation(fields: [reviewId], references: [id])
+}
+
+model Like {
+    id        Int      @id @default(autoincrement())
+    reviewId  Int
+    userId    String
+    createdAt DateTime @default(now())
+
+    review Review @relation(fields: [reviewId], references: [id])
+    user   User   @relation(fields: [userId], references: [id])
+}
+
+model Comment {
+    id        Int      @id @default(autoincrement())
+    reviewId  Int
+    userId    String
+    content   String
+    createdAt DateTime @default(now())
+
+    review Review @relation(fields: [reviewId], references: [id])
+    user   User   @relation(fields: [userId], references: [id])
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
