@@ -9,5 +9,6 @@ export default async function addNewFilm(req, res) {
       director: filmDirector,
     },
   });
+
   res.json(result);
 }

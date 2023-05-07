@@ -27,7 +27,6 @@ model Film {
     id        Int      @id @default(autoincrement())
     year      Int
     title     String
-    category  String
     director  String
     createdAt DateTime @default(now())
     reviews   Review[]

@@ -1,0 +1,26 @@
+import prisma from "@/lib/prisma";
+
+export default async function addNewFilm(req, res) {
+  const {
+    film,
+    nameOfReview,
+    group,
+
+    textComment,
+    filesUrls,
+    rating,
+  } = req.body;
+  const result = await prisma.film.create({
+    data: {
+      reviewName: nameOfReview,
+      filmId: film,
+      category: group,
+      authorId: 123,
+      imageUrl: filesUrls,
+      content: textComment,
+      stars: rating,
+    },
+  });
+
+  res.json(result);
+}

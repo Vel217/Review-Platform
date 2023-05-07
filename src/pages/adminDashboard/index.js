@@ -4,7 +4,6 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import movieFilm from "../../../public/assets/images/movie-film2.png";
 import Link from "next/link";
-import { CollectionsOutlined } from "@mui/icons-material";
 
 function Index() {
   const { t } = useTranslation();
