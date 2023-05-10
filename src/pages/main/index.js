@@ -1,55 +1,48 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
-
+import parseLinks from "@/components/parseLink";
 import movieFilm from "../../../public/assets/images/movie-film2.png";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import prisma from "@/lib/prisma";
+import { format } from "date-fns";
+import { useRouter } from "next/router";
 
-function Index() {
-  //   const [listReviews, setListReview] = useState([]);
-
-  const listReviews = [
-    {
-      id: 1,
-      title: "Boost your conversion rate",
-      film: "titanic",
-      group: "neutral",
-      text: "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80",
-      date: "Mar 16, 2020",
-      author: "Michael Foster",
-      rating: "4",
-    },
-    {
-      id: 2,
-      title: "Boost your conversion rate",
-      film: "titanic",
-      group: "neutral",
-      text: "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
-      imageUrl: "",
-      date: "Mar 16, 2020",
-      author: "Michael Foster",
-      rating: "4",
-    },
-    {
-      id: 3,
-      title: "Boost your conversion rate",
-      film: "titanic",
-      group: "neutral",
-      text: "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
-      imageUrl:
-        "https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80",
-      date: "Mar 16, 2020",
-      author: "Michael Foster",
-      rating: "4",
-    },
-  ];
+function Index(props) {
+  const [listReviews, setListReview] = useState(props.serializedReviews);
+  const router = useRouter();
   const { t } = useTranslation();
+  useEffect(() => {});
+
+  function sortPosts(option) {
+    if (option === "date") {
+      const posts = listReviews.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      setListReview(posts);
+    } else {
+      const posts = listReviews.sort((a, b) => b.stars - a.start);
+      setListReview(posts);
+    }
+  }
 
   return (
     <div className="flex  w-full  justify-center bg-white">
       <div className="bg-white ">
+        <div className="w-screen px-6 mx-auto divide-y divide-gray-200 overflow-hidden  flex justify-start  rounded-lg bg-white shadow">
+          <select
+            name="sortedPost"
+            onChange={(ev) => {
+              sortPosts(ev.target.value);
+            }}
+            defaultValue="date"
+            className="mb-2 block mt-2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+          >
+            <option value="date">Best rating</option>
+            <option value="rating">Newest</option>
+          </select>
+        </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:max-w-4xl">
             <div className="mt-5 space-y-8 lg:mt-10 lg:space-y-10">
@@ -57,39 +50,49 @@ function Index() {
                 <article
                   key={post.id}
                   className={`relative isolate flex flex-col  shadow gap-5 sm:rounded-md p-3 lg:flex-row ${
-                    post.group === "neutral"
+                    post.category === "neutral"
                       ? "bg-slate-100"
-                      : post.group === "positive"
+                      : post.category === "positive"
                       ? "bg-green-100"
                       : "bg-red-100"
                   }`}
                 >
                   <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
-                    <img
-                      src={post.imageUrl !== "" ? post.imageUrl : movieFilm.src}
-                      alt=""
-                      className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
-                    />
+                    {parseLinks(post.imageUrl) === null ? (
+                      <img
+                        src={movieFilm.src}
+                        alt=""
+                        className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={parseLinks(post.imageUrl)[0]}
+                        alt=""
+                        className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                      />
+                    )}
                     <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
                   </div>
                   <div>
                     <div className="flex items-center gap-x-4 text-xs">
                       <p className="font-semibold text-xl text-gray-900">
-                        {post.author}
+                        {post.author.name}
                       </p>
-                      <p className="text-gray-500">{post.date}</p>
+                      <p className="text-gray-500">
+                        {format(new Date(post.createdAt), "dd/MM/yy")}
+                      </p>
                     </div>
                     <div className="group relative max-w-xl">
                       <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
                         <Link href="#">
                           <span className="absolute inset-0" />
-                          {post.title}
+                          {post.reviewName}
                         </Link>
                       </h3>
-                      <h1>{post.film}</h1>
-                      <p className="mt-5 text-sm line-clamp-3 text-gray-600">
-                        {post.text}
-                      </p>
+                      <h1>{post.film.title}</h1>
+                      <div className="mt-5 text-sm line-clamp-3 text-gray-600">
+                        <ReactMarkdown>{post.content}</ReactMarkdown>
+                      </div>
                     </div>
                     <div className="mt-6 flex border-t border-gray-900/5 pt-6">
                       <div className="relative flex items-center gap-x-4">
@@ -131,7 +134,7 @@ function Index() {
                               </svg>
                             </button>
                           </div>
-                          <div>Rating: {post.rating}/5 </div>
+                          <div>Rating: {post.stars}/5 </div>
                         </div>
                       </div>
                     </div>
@@ -149,9 +152,31 @@ function Index() {
 export default Index;
 
 export async function getStaticProps({ locale }) {
+  const reviews = await prisma.review.findMany({
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+      film: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  });
+
+  const serializedReviews = reviews.map((review) => ({
+    ...review,
+    createdAt: review.createdAt.toISOString(),
+  }));
+
+  console.log("serializedReviews", serializedReviews);
   return {
     props: {
       ...(await serverSideTranslations(locale, ["main", "common"])),
+      serializedReviews,
     },
   };
 }

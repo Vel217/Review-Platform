@@ -3,79 +3,15 @@ import React, { useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import movieFilm from "../../../public/assets/images/movie-film2.png";
-import Link from "next/link";
+import prisma from "@/lib/prisma";
+import { format } from "date-fns";
 
-function Index() {
+function Index(props) {
   const { t } = useTranslation();
-  //   const [peopleList, setPeopleList] = useState([])
-  const peopleList = [
-    {
-      id: "1",
-      name: "Leslie Alexander",
-      email: "leslie.alexander@example.com",
-      isAdmin: true,
-      imageUrl:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      href: "#",
+  const [peopleList, setPeopleList] = useState(props.serializedUsersList);
 
-      created_at: "2023-01-23T13:23Z",
-    },
-    {
-      id: "2",
-      name: "Michael Foster",
-      email: "michael.foster@example.com",
-      isAdmin: false,
-      imageUrl:
-        "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      href: "#",
-
-      created_at: "2023-01-23T13:23Z",
-    },
-    {
-      id: "3",
-      name: "Dries Vincent",
-      email: "dries.vincent@example.com",
-      isAdmin: false,
-      imageUrl:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      href: "#",
-      created_at: "2023-01-23T13:23Z",
-    },
-    {
-      id: "4",
-      name: "Lindsay Walton",
-      email: "lindsay.walton@example.com",
-      isAdmin: false,
-      imageUrl:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      href: "#",
-
-      created_at: "2023-01-23T13:23Z",
-    },
-    {
-      id: "5",
-      name: "Courtney Henry",
-      email: "courtney.henry@example.com",
-      isAdmin: false,
-      imageUrl:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      href: "#",
-
-      created_at: "2023-01-23T13:23Z",
-    },
-    {
-      id: "6",
-      name: "Tom Cook",
-      email: "tom.cook@example.com",
-      isAdmin: false,
-      imageUrl:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-      href: "#",
-      created_at: "2023-01-23T13:23Z",
-    },
-  ];
   const { data: session } = useSession();
-  console.log(session);
+
   return (
     <>
       <div className="w-screen">
@@ -100,12 +36,15 @@ function Index() {
                   />
                   <div className="min-w-0 flex-auto">
                     <p className="text-sm font-semibold leading-6 text-gray-900">
-                      <Link href="#">
+                      <button
+                        onClick={() =>
+                          router.push(`/myPage?userId=${person.id}`)
+                        }
+                      >
                         <span className="absolute inset-x-0 -top-px bottom-0" />
                         {person.name}
-                      </Link>
+                      </button>
                     </p>
-                    {/* <p> may be add count of posts</p> */}
                   </div>
                 </div>
                 <div className="flex items-center gap-x-4">
@@ -121,7 +60,7 @@ function Index() {
                       {t("admin:regDate")}
                       <br />
 
-                      {person.created_at}
+                      {format(new Date(person.createdAt), "dd/MM/yy")}
                     </p>
                   </div>
                 </div>
@@ -137,9 +76,15 @@ function Index() {
 export default Index;
 
 export async function getStaticProps({ locale }) {
+  const usersList = await prisma.user.findMany();
+  const serializedUsersList = usersList.map((list) => ({
+    ...list,
+    createdAt: list.createdAt.toISOString(),
+  }));
   return {
     props: {
       ...(await serverSideTranslations(locale, ["admin", "common"])),
+      serializedUsersList,
     },
   };
 }

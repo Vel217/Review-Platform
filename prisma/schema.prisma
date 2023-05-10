@@ -15,7 +15,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    created_at    DateTime  @default(now())
+    createdAt    DateTime  @default(now())
     isAdmin       Boolean   @default(false)
     reviews       Review[]
     Rating        Rating[]
@@ -38,8 +38,8 @@ model Review {
     filmId     Int
     category   String 
     authorId   String
-    imageUrl   String
-    content    String   @db.Text
+    imageUrl   String @db.LongText
+    content    String   @db.LongText
     stars      Int
     createdAt  DateTime @default(now())
 

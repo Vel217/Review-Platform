@@ -2,6 +2,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
+// import prisma from "@/lib/prisma";
 // import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 const listComments = [
   {
@@ -28,7 +29,7 @@ const post = {
   title: "Boost your conversion rate",
   film: "titanic",
   group: "neutral",
-  text: "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
+  text: "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
   imageUrl:
     "https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80",
   date: "Mar 16, 2020",
@@ -55,7 +56,7 @@ function Item() {
                   <img
                     src={post.imageUrl !== "" ? post.imageUrl : movieFilm.src}
                     alt=""
-                    className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                    className="absolute inset-0 h-fit w-full rounded-2xl bg-gray-50 object-cover"
                   />
                   <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
                 </div>
@@ -92,9 +93,7 @@ function Item() {
                       </Link>
                     </h3>
                     <h1>{post.film}</h1>
-                    <p className="mt-5 text-sm line-clamp-3 text-gray-600">
-                      {post.text}
-                    </p>
+                    <p className="mt-5 text-sm  text-gray-600">{post.text}</p>
                   </div>
                   <div className="mt-6 flex border-t border-gray-900/5 pt-6 ">
                     <div className="relative flex items-center gap-x-4 shrink w-full">

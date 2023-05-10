@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import { useRouter } from "next/router";
@@ -9,17 +9,25 @@ function NewFilm() {
   const [filmYear, setFilmYear] = useState("");
   const [filmDirector, setFilmDirector] = useState("");
   const router = useRouter();
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    setError(false);
+  }, [filmName, filmYear, filmDirector]);
   const addFilm = async (ev) => {
     ev.preventDefault();
     try {
-      const data = { filmName, filmYear, filmDirector };
-      const response = await fetch("api/prisma/newFilm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (response.status === 200) {
-        router.push("/newReview");
+      if (filmName === "" || filmYear === "" || filmDirector === "") {
+        setError(true);
+      } else {
+        const data = { filmName, filmYear, filmDirector };
+        const response = await fetch("api/prisma/newFilm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (response.status === 200) {
+          router.push("/newReview");
+        }
       }
     } catch (error) {
       console.log(error);
@@ -28,7 +36,7 @@ function NewFilm() {
   return (
     <>
       <div className="">
-        <form className="flex flex-col mt-5 w-full items-center mb-5">
+        <div className="flex flex-col mt-5 w-full items-center mb-5">
           <h2 className="text-base text-center font-semibold leading-7 ">
             {t("addFilm:newFilm")}
           </h2>
@@ -79,13 +87,13 @@ function NewFilm() {
             </div>
           </div>
           <button
-            type="submit"
+            type="button"
             onClick={addFilm}
             className="rounded-full bg-indigo-600 px-3 py-1.5 m-5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             {t("addFilm:add")}
           </button>
-        </form>
+        </div>
       </div>
     </>
   );

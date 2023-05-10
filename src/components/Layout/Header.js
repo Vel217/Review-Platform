@@ -214,7 +214,7 @@ function Header() {
               <div className="flex flex-1 justify-end">
                 <Link href="#">
                   {" "}
-                  {session ? t("common:login") : t("common:logout")}
+                  {session ? t("common:logout") : t("common:login")}
                   {session ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

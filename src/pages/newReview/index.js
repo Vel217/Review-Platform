@@ -3,19 +3,19 @@ import StarIcon from "@mui/icons-material/Star";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useSession } from "next-auth/react";
-
+import prisma from "@/lib/prisma";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-
 import ReactMarkdown from "react-markdown";
-
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
-function Review() {
+function Review(props) {
+  const EditParams = Boolean(props.serializedReviewEdit);
   const { data: session } = useSession();
-  console.log(session);
+  const [userId, setUserId] = useState("");
   const [film, setFilm] = useState("");
   const [rating, setRating] = useState(0);
   const [nameOfReview, setNameOfReview] = useState("");
@@ -23,14 +23,32 @@ function Review() {
   const [tags, setTags] = useState([]);
   const { t } = useTranslation();
   const [filesUrls, setFilesUrls] = useState([]);
+  const [filesUrlsEdit, setFilesUrlsEdit] = useState("");
   const [previewFiles, setPreviewFile] = useState([]);
   const ref = useRef([]);
-  const [textComment, setTextComment] = useState("");
+  const [textContent, setTextContent] = useState("");
   const [error, setError] = useState(false);
+  const [tagCloud, setTagCloud] = useState([...props.serializedTags]);
+  const [selectedTag, setSelectedTag] = useState([]);
+  const [tagNew, setTagNew] = useState([]);
+  const [selectedFilmId, setSelectedFilmId] = useState("");
+  const [filmList, setFilmList] = useState([...props.serializedFilms]);
+  const router = useRouter();
+  const [postId, setPostId] = useState(props.query.postId);
+
+  useEffect(() => {
+    if (props.serializedReviewEdit) {
+      setSelectedFilmId(props.serializedReviewEdit.filmId);
+      setNameOfReview(props.serializedReviewEdit.reviewName);
+      setTextContent(props.serializedReviewEdit.content);
+      setGroup(props.serializedReviewEdit.category);
+      setRating(props.serializedReviewEdit.stars);
+      setFilesUrls(props.serializedReviewEdit.imageUrl.split(","));
+    }
+  }, []);
 
   const updatePreviewFiles = useCallback(
     (files) => {
-      // console.log("previewFiles", previewFiles);
       setPreviewFile([...previewFiles, ...files]);
     },
     [previewFiles]
@@ -90,92 +108,86 @@ function Review() {
     setPreviewFile(previewFiles.filter((x) => x.name !== i));
   };
 
-  const [tagCloud, setTagCloud] = useState([]);
-  // const tagCloud = [
-  //   "The Shawshank Redemption",
-  //   "The Godfather",
-  //   "The Godfather: Part II",
-  //   "The Dark Knight",
-  //   "12 Angry Men",
-  //   "Schindler's List",
-  //   "Pulp Fiction",
-  //   "The Lord of the Rings: The Return of the King",
-  //   "Fight Club",
-  // ];
-  const [selectedTag, setSelectedTag] = useState([]);
+  useEffect(() => {
+    if (!EditParams) {
+      let selectFilmId = film.id;
+      if (selectFilmId) {
+        setSelectedFilmId(selectFilmId);
+      }
+    }
+  }, [film]);
 
-  const [tagNew, setTagNew] = useState([]);
-
-  // const [filmList, setFilmList] = useState([]);
-  const filmList = [
-    { title: "The Shawshank Redemption", year: 1994 },
-    { title: "The Godfather", year: 1972 },
-    { title: "The Godfather: Part II", year: 1974 },
-    { title: "The Dark Knight", year: 2008 },
-    { title: "12 Angry Men", year: 1957 },
-    { title: "Schindler's List", year: 1993 },
-    { title: "Pulp Fiction", year: 1994 },
-    {
-      title: "The Lord of the Rings: The Return of the King",
-      year: 2003,
-    },
-    { title: "The Good, the Bad and the Ugly", year: 1966 },
-    { title: "Fight Club", year: 1999 },
-    {
-      title: "The Lord of the Rings: The Fellowship of the Ring",
-      year: 2001,
-    },
-    {
-      title: "Star Wars: Episode V - The Empire Strikes Back",
-      year: 1980,
-    },
-  ];
   useEffect(() => {
     setError(false);
-  }, [film, nameOfReview, group, selectedTag, textComment, rating]);
+  }, [film, nameOfReview, group, selectedTag, textContent, rating]);
 
   const addReview = async (ev) => {
     ev.preventDefault();
+    // setUserId(session.user.id);
+    let filesUrlDB;
+    if (filesUrls.length > 1) {
+      filesUrlDB = filesUrls.join(",");
+    } else {
+      filesUrlDB = "";
+    }
+
     try {
       const data = {
         film,
         nameOfReview,
         group,
-        selectedTag,
-        textComment,
-        filesUrls,
+        userId,
+        textContent,
+        filesUrlDB,
         rating,
+        postId,
       };
+
       if (
-        film === "" ||
+        selectedFilmId === "" ||
         group === "" ||
         nameOfReview === "" ||
         rating === 0 ||
-        selectedTag === [] ||
-        textComment === ""
+        // session.user.id === [] ||
+        textContent === ""
       ) {
         return setError(true);
       } else {
-        // const response = await fetch("api/prisma/newReview", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify(data),
-        // });
-        // if (response.status === 200) {
-        //   router.push("/main");
-        // }
-        console.log("bag");
+        if (EditParams) {
+          const response = await fetch(`/api/prisma/updateReview`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          if (response.status === 200) {
+            console.log("ok");
+            // router.push("/main");
+          }
+        } else {
+          const response = await fetch(`/api/prisma/newReview`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          if (response.status === 200) {
+            console.log("ok");
+            // router.push("/main");
+          }
+        }
       }
     } catch (error) {
       console.log(error);
     }
   };
+  const addNewTag = async () => {
+    data = {};
+  };
 
   return (
     <>
-      <form className="flex flex-col  mt-5 w-full items-center mb-5">
+      <div className="flex flex-col  mt-5 w-full items-center mb-5">
         <h2 className="text-base text-center font-semibold leading-7 ">
-          {t("review:addNewRev")}
+          {EditParams ? <>Edit edition</> : <>{t("review:addNewRev")} </>}
         </h2>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
@@ -187,10 +199,13 @@ function Review() {
               className="border-none hover:border-none rounded-md bg-transparent py-1.5 pl-1 focus:ring-0 active:border-none sm:text-sm sm:leading-6  w-full"
               id="free-solo-2-demo"
               disableClearable
+              value={EditParams ? props.serializedReviewEdit.filmId : null}
               onChange={(event, value) => setFilm(value)}
-              options={filmList.map(
-                (option) => option.title + ", " + option.year
-              )}
+              options={filmList.map((film) => film.id)}
+              getOptionLabel={(filmId) => {
+                const film = filmList.find((film) => film.id === filmId);
+                return film ? `${film.title}, ${film.year}` : "";
+              }}
               renderInput={(params) => (
                 <TextField
                   className=" border-none hover:border-none bg-transparent active:border-none py-1.5 pl-1 sm:text-sm sm:leading-6  w-full"
@@ -220,6 +235,7 @@ function Review() {
           <div className="px-4 py-5 sm:p-6">
             <input
               type="text"
+              value={nameOfReview}
               onChange={(ev) => setNameOfReview(ev.target.value)}
               className="border-1 rounded-md bg-transparent py-1.5 pl-1 focus:ring-0 sm:text-sm sm:leading-6  w-1/2"
             />
@@ -232,15 +248,15 @@ function Review() {
           </div>
           <div className="px-4 py-5 sm:p-6">
             <select
-              name="location"
+              name="language"
               onChange={(ev) => {
                 setGroup(ev.target.value);
               }}
+              value={group}
               className="mt-2 block w-1/2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
             >
-              <option value="positive" selected>
-                {t("review:positive")}
-              </option>
+              <option value=""> </option>
+              <option value="positive">{t("review:positive")}</option>
               <option value="neutral">{t("review:neutral")}</option>
               <option value="negative">{t("review:negative")}</option>
             </select>
@@ -258,7 +274,7 @@ function Review() {
               id="tags-outlined"
               className="border-none hover:border-none rounded-md bg-transparent py-1.5 focus:ring-0 active:border-none sm:text-sm sm:leading-6 w-full"
               options={tagCloud}
-              getOptionLabel={(option) => option}
+              getOptionLabel={(option) => option.title}
               filterSelectedOptions
               onChange={(event, value) => {
                 const newValue = value[value.length - 1];
@@ -282,15 +298,15 @@ function Review() {
                 <textarea
                   rows={8}
                   className="block w-full resize-none rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  value={textComment}
+                  value={textContent}
                   onChange={(ev) => {
-                    setTextComment(ev.target.value);
+                    setTextContent(ev.target.value);
                   }}
                 />
               </div>
               <div className="w-1/2 block  rounded-md border-0 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 <article class="prose prose-sm">
-                  <ReactMarkdown>{textComment}</ReactMarkdown>
+                  <ReactMarkdown>{textContent}</ReactMarkdown>
                 </article>
               </div>
             </div>
@@ -376,6 +392,7 @@ function Review() {
               onChange={(event, newValue) => {
                 setRating(newValue);
               }}
+              value={rating}
               max={10}
               defaultValue={0}
               emptyIcon={
@@ -395,23 +412,52 @@ function Review() {
         )}
 
         <button
-          type="submit"
+          type="button"
           onClick={addReview}
           className="rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           {t("review:submit")}
         </button>
-      </form>
+      </div>
     </>
   );
 }
 
 export default Review;
 
-export async function getStaticProps({ locale }) {
+export async function getServerSideProps({ locale, query }) {
+  const films = await prisma.film.findMany();
+  const serializedFilms = films.map((film) => ({
+    ...film,
+    createdAt: film.createdAt.toISOString(),
+  }));
+
+  const tags = await prisma.tag.findMany();
+  const serializedTags = tags.map((tag) => ({
+    ...tag,
+    createdAt: tag.createdAt.toISOString(),
+  }));
+
+  let serializedReviewEdit = null;
+  if (query.postId) {
+    serializedReviewEdit = await prisma.review.findUnique({
+      where: { id: +query.postId },
+    });
+
+    const a = serializedReviewEdit.createdAt.toISOString();
+
+    serializedReviewEdit.createdAt =
+      serializedReviewEdit.createdAt.toISOString();
+  }
+
   return {
     props: {
       ...(await serverSideTranslations(locale, ["review", "common"])),
+      serializedFilms,
+      serializedTags,
+      serializedReviewEdit,
+      query,
     },
+    // notFound: true,
   };
 }
