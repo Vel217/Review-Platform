@@ -26,59 +26,66 @@ function Item({
 }) {
   const router = useRouter();
   const { data: session } = useSession();
-  const [userId, setUserId] = useState(session?.user.id);
-  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
+  // const [userId, setUserId] = useState(session?.user.id);
+  const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
   const { t } = useTranslation();
   const [textarea, setTextarea] = useState("");
   const [rating, setRating] = useState(0);
   const [ratingList, setRatingList] = useState(serializedRatingsOnPost);
-  const [likePost, setLikePost] = useState(false);
-  const [likesOnPost, setLikesOnPost] = useState(serializedLikeOnPost);
-  const [postContent, setPostContent] = useState(serializedPost[0]);
   const [averageRating, setAverageRating] = useState(0);
+  const [currentRating, setCurrentRating] = useState(undefined);
 
+  const [likePost, setLikePost] = useState(undefined);
+  const [likesOnPost, setLikesOnPost] = useState(serializedLikeOnPost);
+
+  const [postContent, setPostContent] = useState(serializedPost[0]);
   const [listComments, setListComments] = useState(serializedCommentsOnPost);
-
   const [postId, setPostId] = useState(queryId);
   const [imgUrlAr, setImgUrlAr] = useState([]);
+
   useEffect(() => {
     const a = parseLinks(postContent.imageUrl);
     setImgUrlAr(a);
   }, []);
 
   useEffect(() => {
-    setLikePost(likesOnPost.includes((item) => item.userId === userId));
-  }, []);
+    let likeCont = likesOnPost.find((item) => item.userId === userId);
+    setLikePost(likeCont);
+  }, [session, likesOnPost, likePost]);
 
+  // useEffect(() => {
+  //   let sumStars = ratingList.reduce((accum, item) => {
+  //     return accum + item.stars;
+  //   }, 0);
+  //   if (ratingList.length > 0) {
+  //     setAverageRating(sumStars / ratingList.length);
+  //   }
+  // }, []);
   useEffect(() => {
-    let userRating = ratingList.map((item) => {
-      item.userId === userId;
+    let userRating = ratingList?.find((item) => {
+      return item.userId === userId;
     });
-    setRating(userRating.stars);
-  }, []);
-  useEffect(() => {
-    let sumStars = ratingList.reduce((accum, item) => {
-      return accum + item.stars;
-    }, 0);
-    if (ratingList.length > 0) {
-      setAverageRating(sumStars / ratingList.length);
-    }
-  }, []);
+    setCurrentRating(userRating);
+    setRating(userRating?.stars);
+  }, [session, ratingList]);
 
+  console.log(currentRating);
   const handleLike = async () => {
     if (likePost) {
       try {
+        const likeId = likePost.id;
         const data = {
-          postId,
-          userId,
+          likeId,
         };
-        const response = await fetch("/api/prisma/addLike", {
+        console.log(data);
+        const response = await fetch("/api/prisma/deleteLike", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
         if (response.status === 200) {
           console.log("okLike");
+          setLikesOnPost(likesOnPost.filter((like) => like.id !== likePost.id));
         }
       } catch (error) {
         console.log(error);
@@ -93,7 +100,8 @@ function Item({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        });
+        }).then((res) => res.json());
+        setLikesOnPost([...likesOnPost, response]);
         if (response.status === 200) {
           console.log("okLike");
         }
@@ -101,43 +109,47 @@ function Item({
         console.log(error);
       }
     }
-
-    setLikePost(!likePost);
   };
 
   const ratingPost = async (stars) => {
-    if (rating) {
+    console.log(currentRating, "currentRating");
+    const filmId = postContent.film.id
+    if (currentRating) {
+      try {
+        const ratingId = currentRating?.id;
+        const data = {
+          filmId,
+          userId,
+          stars,
+          ratingId,
+        };
+        const response = await fetch("/api/prisma/rating", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }).then((data) => data.json());
+        setRating(+stars);
+        if (response.status === 200) {
+          console.log("okRating");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
       try {
         const data = {
-          postId,
+          filmId,
           userId,
           stars,
         };
         const response = await fetch("/api/prisma/rating", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (response.status === 200) {
-          console.log("okLike");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    } else {
-      try {
-        const data = {
-          postId,
-          userId,
-          rating,
-        };
-        const response = await fetch("/api/prisma/rating", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
-        });
+        }).then((data) => data.json());
+        setRating(+stars);
         if (response.status === 200) {
-          console.log("okLike");
+          console.log("okRating");
         }
       } catch (error) {
         console.log(error);
@@ -362,6 +374,7 @@ function Item({
                     aria-hidden="true"
                   />
                 </button>
+                <>{likesOnPost.length}</>
                 <div className="items-center">
                   <div>
                     {averageRating ? averageRating : <p>еще нет оценок</p>}
@@ -370,11 +383,9 @@ function Item({
                     name="customized-10"
                     onChange={(event, newValue) => {
                       ratingPost(newValue);
-                      setRating(newValue);
                     }}
-                    // value={rating}
+                    value={rating}
                     max={5}
-                    defaultValue={rating}
                     emptyIcon={
                       <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
                     }
@@ -480,6 +491,7 @@ export async function getServerSideProps({ locale, query }) {
       film: {
         select: {
           title: true,
+          id: true,
         },
       },
     },

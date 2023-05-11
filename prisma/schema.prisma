@@ -15,7 +15,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    createdAt    DateTime  @default(now())
+    createdAt     DateTime  @default(now())
     isAdmin       Boolean   @default(false)
     reviews       Review[]
     Rating        Rating[]
@@ -30,15 +30,16 @@ model Film {
     director  String
     createdAt DateTime @default(now())
     reviews   Review[]
+    rating    Rating[]
 }
 
 model Review {
     id         Int      @id @default(autoincrement())
     reviewName String
     filmId     Int
-    category   String 
+    category   String
     authorId   String
-    imageUrl   String @db.LongText
+    imageUrl   String   @db.LongText
     content    String   @db.LongText
     stars      Int
     createdAt  DateTime @default(now())
@@ -48,7 +49,6 @@ model Review {
     Taggings Taggings[]
     Like     Like[]
     Comment  Comment[]
-    Rating   Rating[]
 
     @@index([filmId], name: "review_film_id")
     @@index([authorId], name: "review_author_id")
@@ -57,17 +57,17 @@ model Review {
 model Rating {
     id        Int      @id @default(autoincrement())
     userId    String
-    reviewId  Int
+    filmId    Int
     stars     Int
     createdAt DateTime @default(now())
 
-    user   User   @relation(fields: [userId], references: [id])
-    review Review @relation(fields: [reviewId], references: [id])
+    user User @relation(fields: [userId], references: [id])
+    film Film @relation(fields: [filmId], references: [id])
 }
 
 model Tag {
     id        Int        @id @default(autoincrement())
-    title     String
+    title     String     @unique
     createdAt DateTime   @default(now())
     Taggings  Taggings[]
 }

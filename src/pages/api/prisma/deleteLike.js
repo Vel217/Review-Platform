@@ -1,13 +1,12 @@
 import prisma from "@/lib/prisma";
 
 export default async function addLike(req, res) {
-  const { postId, userId } = req.body;
-
+  const { likeId } = req.body;
+  console.log(likeId);
   try {
     const result = await prisma.like.delete({
       where: {
-        reviewId: +postId,
-        userId: userId,
+        id: +likeId,
       },
     });
     res.json(result);

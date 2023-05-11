@@ -11,8 +11,8 @@ import { useRouter } from "next/router";
 
 function MyPage(props) {
   const { data: session } = useSession();
-  const [userId, setUserId] = useState(session?.user.id);
-  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
+  // const [userId, setUserId] = useState(session?.user.id);
+  const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
   const { t } = useTranslation();
   const [listReviews, setListReview] = useState(props.serializedReviews);
 
@@ -35,9 +35,7 @@ function MyPage(props) {
           <div className="mx-auto max-w-2xl lg:max-w-4xl">
             <div className="mt-5 space-y-8 lg:mt-10 lg:space-y-10">
               {listReviews
-                // .filter(post =>
-                //   post.authorId === userId;
-                // )
+                .filter((post) => post.authorId === userId)
                 .map((post) => (
                   <article
                     onClick={() => router.push(`/reviewPost?postId=${post.id}`)}
@@ -181,6 +179,22 @@ export async function getServerSideProps({ locale }) {
           title: true,
         },
       },
+      Comment: {
+        select: {
+          id: true,
+        },
+      },
+      Rating: {
+        select: {
+          stars: true,
+        },
+      },
+
+      Like: {
+        select: {
+          id: true,
+        },
+      },
     },
   });
 
@@ -188,6 +202,7 @@ export async function getServerSideProps({ locale }) {
     ...review,
     createdAt: review.createdAt.toISOString(),
   }));
+  console.log("serializedReviews", serializedReviews);
   return {
     props: {
       ...(await serverSideTranslations(locale, ["myPage", "common"])),

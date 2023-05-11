@@ -2,14 +2,14 @@ import prisma from "@/lib/prisma";
 
 export default async function addLike(req, res) {
   if (req.method === "POST") {
-    const { postId, userId, rating } = req.body;
+    const { filmId, userId, stars } = req.body;
 
     try {
       const result = await prisma.rating.create({
         data: {
-          reviewId: +postId,
+          filmId: +filmId,
           userId: userId,
-          stars: rating,
+          stars: +stars,
         },
       });
       res.json(result);
@@ -19,16 +19,17 @@ export default async function addLike(req, res) {
     }
   }
   if (req.method === "PATCH") {
-    const { postId, userId } = req.body;
+    const { postId, userId, stars, ratingId } = req.body;
 
     try {
       const result = await prisma.rating.update({
         where: {
-          reviewId: +postId,
-          userId: userId,
+          id: +ratingId,
         },
         data: {
-          stars: rating,
+          stars: +stars,
+          userId: userId,
+          filmId: +filmId,
         },
       });
       res.json(result);
