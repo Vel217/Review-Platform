@@ -26,8 +26,8 @@ function Item({
 }) {
   const router = useRouter();
   const { data: session } = useSession();
-  // const [userId, setUserId] = useState(session?.user.id);
-  const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
+  const [userId, setUserId] = useState(session?.user.id);
+  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
   const { t } = useTranslation();
   const [textarea, setTextarea] = useState("");
   const [rating, setRating] = useState(0);
