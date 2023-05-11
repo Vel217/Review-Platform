@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
 import React, { useEffect, useState } from "react";
@@ -7,7 +5,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import ReactMarkdown from "react-markdown";
-import { Disclosure, RadioGroup, Tab } from "@headlessui/react";
+import { Tab } from "@headlessui/react";
 import { useSession } from "next-auth/react";
 import prisma from "@/lib/prisma";
 import parseLinks from "@/components/parseLink";
@@ -15,67 +13,32 @@ import movieFilm from "../../../public/assets/images/movie-film2.png";
 import { format } from "date-fns";
 import { useRouter } from "next/router";
 
-// const postContent = {
-//   reviewName: "Crash of titanic",
-//   filmId: "Titanic",
-//   category: "positive",
-//   stars: 4,
-//   authorId: "Marat",
-//   createdAt: "10.05.2022",
-//   imageUrl: [
-//     "http://res.cloudinary.com/dfyhsmubh/image/upload/v1683551975/wme6zpmftiscwkjfkaal.png",
-//     "http://res.cloudinary.com/dfyhsmubh/image/upload/v1683551976/iessezkywmcpb0e7ohde.png",
-//     "http://res.cloudinary.com/dfyhsmubh/image/upload/v1683551978/udzi9pseu2nboqog3msu.png",
-//   ],
-
-//   content:
-//     "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised worThere are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look ds which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.",
-// };
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
-// const listComments = [
-//   {
-//     id: 1,
-//     userName: "Popka",
-//     content:
-//       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-//     createAt: "12.04.2022",
-//   },
-//   {
-//     id: 2,
-//     userName: "Popka",
-//     content:
-//       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-//     createAt: "12.04.2022",
-//   },
-//   {
-//     id: 3,
-//     userName: "Popka",
-//     content:
-//       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-//     createAt: "12.04.2022",
-//   },
-// ];
 
 function Item({
   serializedPost,
   serializedLikeOnPost,
   serializedCommentsOnPost,
+  serializedRatingsOnPost,
   queryId,
 }) {
   const router = useRouter();
   const { data: session } = useSession();
   const [userId, setUserId] = useState(session?.user.id);
+  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
   const { t } = useTranslation();
   const [textarea, setTextarea] = useState("");
   const [rating, setRating] = useState(0);
+  const [ratingList, setRatingList] = useState(serializedRatingsOnPost);
   const [likePost, setLikePost] = useState(false);
+  const [likesOnPost, setLikesOnPost] = useState(serializedLikeOnPost);
   const [postContent, setPostContent] = useState(serializedPost[0]);
+  const [averageRating, setAverageRating] = useState(0);
 
   const [listComments, setListComments] = useState(serializedCommentsOnPost);
-  const [likes, setLikes] = useState(serializedLikeOnPost);
+
   const [postId, setPostId] = useState(queryId);
   const [imgUrlAr, setImgUrlAr] = useState([]);
   useEffect(() => {
@@ -83,30 +46,102 @@ function Item({
     setImgUrlAr(a);
   }, []);
 
-  //
-  // async
-  //
-  const handleLike = () => {
+  useEffect(() => {
+    setLikePost(likesOnPost.includes((item) => item.userId === userId));
+  }, []);
+
+  useEffect(() => {
+    let userRating = ratingList.map((item) => {
+      item.userId === userId;
+    });
+    setRating(userRating.stars);
+  }, []);
+  useEffect(() => {
+    let sumStars = ratingList.reduce((accum, item) => {
+      return accum + item.stars;
+    }, 0);
+    if (ratingList.length > 0) {
+      setAverageRating(sumStars / ratingList.length);
+    }
+  }, []);
+
+  const handleLike = async () => {
     if (likePost) {
-      // await sendRequestToRemoveLike();
-      console.log("ToRemoveLike");
+      try {
+        const data = {
+          postId,
+          userId,
+        };
+        const response = await fetch("/api/prisma/addLike", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (response.status === 200) {
+          console.log("okLike");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      console.log("ToAddLike");
-      // await sendRequestToAddLike();
+      try {
+        const data = {
+          postId,
+          userId,
+        };
+        const response = await fetch("/api/prisma/addLike", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (response.status === 200) {
+          console.log("okLike");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     setLikePost(!likePost);
   };
-  //
-  // async
-  //
-  const ratingPost = () => {
+
+  const ratingPost = async (stars) => {
     if (rating) {
-      // await sendRequestToRemoveRating();
-      console.log("ToRemoveRating");
+      try {
+        const data = {
+          postId,
+          userId,
+          stars,
+        };
+        const response = await fetch("/api/prisma/rating", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (response.status === 200) {
+          console.log("okLike");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      console.log("ToAddRating");
-      // await sendRequestToAddRating();
+      try {
+        const data = {
+          postId,
+          userId,
+          rating,
+        };
+        const response = await fetch("/api/prisma/rating", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (response.status === 200) {
+          console.log("okLike");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
   const deletePost = async () => {
@@ -151,6 +186,32 @@ function Item({
       console.log(error);
     }
   };
+  const deleteComment = async (commentId) => {
+    try {
+      const data = { commentId };
+
+      const response = await fetch("/api/prisma/deleteComment", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (response.status === 200) {
+        console.log("ok");
+        const data = { postId, userId, textarea };
+
+        const response = await fetch("/api/prisma/getComment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        let a = await response.json();
+        setListComments(a);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <div className="flex  w-full justify-center items-center flex-col">
@@ -233,10 +294,10 @@ function Item({
                     {session?.user.name !== postContent.author.name ? (
                       <button
                         type="button"
-                        onClick={deletePost}
+                        onClick={() => deletePost}
                         className="inline-flex items-center rounded-md bg-red-400 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300"
                       >
-                        delete
+                        {t("comments:delete")}
                       </button>
                     ) : null}
                     {session?.user.name !== postContent.author.name ? (
@@ -247,7 +308,7 @@ function Item({
                         }
                         className="inline-flex items-center rounded-md bg-teal-400 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
                       >
-                        edit
+                        {t("comments:edit")}
                       </button>
                     ) : null}
                   </div>
@@ -260,7 +321,9 @@ function Item({
               <div className="mt-3">
                 <div className="text-xl tracking-tight text-gray-900 flex justify-between">
                   <div> {postContent.film.title}</div>
-                  <div>assessment: {postContent.stars}/10</div>
+                  <div>
+                    {t("comments:assessment")}: {postContent.stars}/10
+                  </div>
                   <div>
                     {format(new Date(postContent.createdAt), "dd/MM/yy")}
                   </div>
@@ -298,18 +361,20 @@ function Item({
                     }`}
                     aria-hidden="true"
                   />
-                  <span className="sr-only">Add to favorites</span>
                 </button>
                 <div className="items-center">
+                  <div>
+                    {averageRating ? averageRating : <p>еще нет оценок</p>}
+                  </div>
                   <Rating
                     name="customized-10"
                     onChange={(event, newValue) => {
-                      ratingPost;
+                      ratingPost(newValue);
                       setRating(newValue);
                     }}
-                    value={rating}
+                    // value={rating}
                     max={5}
-                    defaultValue={0}
+                    defaultValue={rating}
                     emptyIcon={
                       <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
                     }
@@ -319,8 +384,6 @@ function Item({
             </div>
           </div>
         </div>
-
-        {/* ????? */}
 
         <div className=" max-w-2xl w-1/2 lg:max-w-4xl ">
           <ul role="list" className="rounded-md  shadow   ">
@@ -343,6 +406,7 @@ function Item({
                     <div className="flex justify-end">
                       <button
                         type="button"
+                        onClick={() => deleteComment(item.id)}
                         className="  rounded-md bg-red-100 px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-200"
                       >
                         {t("comments:delete")}
@@ -354,7 +418,7 @@ function Item({
             ) : (
               <>
                 <div className="p-4  h-auto my-5 py-2 rounded-md shadow-lg  sm:rounded-md sm:px-6 flex flex-col gap-3 bg-white">
-                  Здесь пока нет коментариев
+                  {t("comments:noComments")}
                 </div>
               </>
             )}
@@ -370,7 +434,7 @@ function Item({
                         <textarea
                           rows={3}
                           className="block w-full resize-none border-0 bg-transparent py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                          placeholder="Add your comment..."
+                          placeholder={t("comments:addComment")}
                           defaultValue={""}
                           onChange={(ev) => setTextarea(ev.target.value)}
                         />
@@ -381,7 +445,7 @@ function Item({
                         <div className="flex-shrink-0">
                           <button
                             type="button"
-                            onClick={addComment}
+                            onClick={() => addComment}
                             className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                           >
                             {t("comments:postComment")}
@@ -450,6 +514,16 @@ export async function getServerSideProps({ locale, query }) {
     createdAt: comments.createdAt.toISOString(),
   }));
   const queryId = query.postId;
+
+  const ratingsOnPost = await prisma.rating.findMany({
+    where: {
+      reviewId: +query.postId,
+    },
+  });
+  const serializedRatingsOnPost = ratingsOnPost.map((rating) => ({
+    ...rating,
+    createdAt: rating.createdAt.toISOString(),
+  }));
   // console.log("serializedPost", serializedPost);
   // console.log("serializedCommentsOnPost", serializedCommentsOnPost);
   // console.log("query", query);
@@ -460,6 +534,7 @@ export async function getServerSideProps({ locale, query }) {
       serializedPost,
       serializedLikeOnPost,
       serializedCommentsOnPost,
+      serializedRatingsOnPost,
       queryId,
     },
   };

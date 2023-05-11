@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import parseLinks from "@/components/parseLink";
 import movieFilm from "../../../public/assets/images/movie-film2.png";
-import Link from "next/link";
+
 import ReactMarkdown from "react-markdown";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
@@ -40,8 +40,8 @@ function Index(props) {
             defaultValue="date"
             className="mb-2 block mt-2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
           >
-            <option value="date">Best rating</option>
-            <option value="rating">Newest</option>
+            <option value="date">{t("main:best")}</option>
+            <option value="rating">{t("main:new")}</option>
           </select>
         </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -49,6 +49,9 @@ function Index(props) {
             <div className="mt-5 space-y-8 lg:mt-10 lg:space-y-10">
               {listReviews.map((post) => (
                 <article
+                  onClickCapture={() =>
+                    router.push(`/reviewPost?postId=${post.id}`)
+                  }
                   key={post.id}
                   onClick={() => {
                     router.push(`/reviewPost?postId=${post.id}`);
@@ -56,7 +59,7 @@ function Index(props) {
                   className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8 px-5"
                 >
                   <div>
-                    <div className="relative aspect-square sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
+                    <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
                       {parseLinks(post.imageUrl) === null ? (
                         <img
                           src={movieFilm.src}
@@ -97,8 +100,13 @@ function Index(props) {
                     </div>
                     <div className="group relative max-w-xl">
                       <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                        <span className="absolute inset-0" />
-                        {post.reviewName}
+                        <button
+                          onClick={() =>
+                            router.push(`/reviewPost?postId=${post.id}`)
+                          }
+                        >
+                          {post.reviewName}
+                        </button>
                       </h3>
                       <h1>{post.film.title}</h1>
                       <div className="mt-5 text-sm line-clamp-3 text-gray-600">
@@ -145,7 +153,9 @@ function Index(props) {
                               </svg>
                             </button>
                           </div>
-                          <div>Rating: {post.stars}/5 </div>
+                          <div>
+                            {t("main:rating")}: {post.stars}/5{" "}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -162,7 +172,7 @@ function Index(props) {
 
 export default Index;
 
-export async function getStaticProps({ locale }) {
+export async function getServerSideProps({ locale }) {
   const reviews = await prisma.review.findMany({
     include: {
       author: {
@@ -183,7 +193,6 @@ export async function getStaticProps({ locale }) {
     createdAt: review.createdAt.toISOString(),
   }));
 
-  // console.log("serializedReviews", serializedReviews);
   return {
     props: {
       ...(await serverSideTranslations(locale, ["main", "common"])),

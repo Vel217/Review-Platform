@@ -15,7 +15,9 @@ import { useRouter } from "next/router";
 function Review(props) {
   const EditParams = Boolean(props.serializedReviewEdit);
   const { data: session } = useSession();
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState(session?.user.id);
+  // const [userId, setUserId] = useState( "clhc83zgp0000lc09djw31scg")
+
   const [film, setFilm] = useState("");
   const [rating, setRating] = useState(0);
   const [nameOfReview, setNameOfReview] = useState("");
@@ -187,8 +189,22 @@ function Review(props) {
   return (
     <>
       <div className="flex flex-col  mt-5 w-full items-center mb-5">
+        <div className="flex justify-start">
+          {" "}
+          <button
+            className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            onClick={() => router.back()}
+          >
+            {t("review:back")}
+          </button>
+        </div>
+
         <h2 className="text-base text-center font-semibold leading-7 ">
-          {EditParams ? <>Edit edition</> : <>{t("review:addNewRev")} </>}
+          {EditParams ? (
+            <>{t("review:editEd")}</>
+          ) : (
+            <>{t("review:addNewRev")} </>
+          )}
         </h2>
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
@@ -242,7 +258,6 @@ function Review(props) {
             />
           </div>
         </div>
-
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:groupOfReview")}
@@ -263,7 +278,6 @@ function Review(props) {
             </select>
           </div>
         </div>
-
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:tagOfReview")}
@@ -288,7 +302,6 @@ function Review(props) {
             />
           </div>
         </div>
-
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3  rounded-lg bg-white shadow ">
           <div className="px-4 py-5 sm:px-6 font-bold justify-start">
             {t("review:textOfReview")}
@@ -313,7 +326,6 @@ function Review(props) {
             </div>
           </div>
         </div>
-
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow px-6 py-4">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:addPic")}
@@ -382,7 +394,6 @@ function Review(props) {
             </div>
           </div>
         </div>
-
         <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow mb-5">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:rating")}
@@ -407,11 +418,10 @@ function Review(props) {
             {" "}
             <div className="mx-auto text-xl text-black-300">
               {" "}
-              все поля должны быть заполнены
+              {t("review:mustFilled")}
             </div>
           </div>
         )}
-
         <button
           type="button"
           onClick={addReview}

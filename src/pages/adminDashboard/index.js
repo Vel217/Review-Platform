@@ -75,7 +75,7 @@ function Index(props) {
 
 export default Index;
 
-export async function getStaticProps({ locale }) {
+export async function getServerSideProps({ locale }) {
   const usersList = await prisma.user.findMany();
   const serializedUsersList = usersList.map((list) => ({
     ...list,

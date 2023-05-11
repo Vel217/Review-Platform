@@ -10,15 +10,41 @@ export default function Home() {
   if (session) {
     return (
       <>
-        {t("home:signInAs")} {session.user.name} <br />
-        <button
-          className="rounded bg-indigo-600 dark:bg-slate-400 px-2 py-1 text-sm font-semibold text-white dark:text-black shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          onClick={() => {
-            signOut();
-          }}
-        >
-          {t("home:signOut")}
-        </button>
+        <div className="flex flex-col justify-center items-center  w-full mb-32">
+          <div className="w-1/2 border-1 rounded-md shadow-md p-5 bg-slate-50">
+            <div className="my-10">
+              <div className="relative">
+                <div
+                  className="absolute inset-0 flex items-center"
+                  aria-hidden="true"
+                >
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-sm font-medium leading-6">
+                  <span className="bg-slate-50   px-6 text-gray-500  dark:text-black">
+                    {t("home:signInAs")} {session.user.name} <br />
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center items-center  sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+              <div className="mx-auto w-full max-w-sm lg:w-96">
+                <div className=" flex justify-center text-md font-medium leading-6">
+                  <span className="bg-slate-50  dark:bg-slate-400  text-gray-900  dark:text-black flex items-center flex-col">
+                    <button
+                      className=" flex gap-5 rounded bg-sky-500  px-3 py-2 font-thin text-xl  text-white shadow-sm  dark:text-black hover:bg-sky-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500"
+                      onClick={() => {
+                        signOut();
+                      }}
+                    >
+                      {t("home:signOut")}
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </>
     );
   }

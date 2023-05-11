@@ -11,7 +11,8 @@ import { useRouter } from "next/router";
 
 function MyPage(props) {
   const { data: session } = useSession();
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState(session?.user.id);
+  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
   const { t } = useTranslation();
   const [listReviews, setListReview] = useState(props.serializedReviews);
 
@@ -23,23 +24,23 @@ function MyPage(props) {
       <div className="flex flex-col w-full  justify-center bg-white">
         <div className="w-screen px-6 mx-auto divide-y divide-gray-200 overflow-hidden  flex justify-between  rounded-lg bg-white shadow">
           <button
-            onClick={() =>
-              router.push(`/newReview?edit=true&&postId=${userId}`)
-            }
+            onClick={() => router.push(`/newReview`)}
             className="mb-2 rounded-full bg-gray-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 "
           >
-            Create New Review
+            {t("myPage:create")}
           </button>
+          <div> {session?.user.name}</div>
         </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl lg:max-w-4xl">
             <div className="mt-5 space-y-8 lg:mt-10 lg:space-y-10">
               {listReviews
-                // .filter((post) => {
+                // .filter(post =>
                 //   post.authorId === userId;
-                // })
+                // )
                 .map((post) => (
                   <article
+                    onClick={() => router.push(`/reviewPost?postId=${post.id}`)}
                     key={post.id}
                     className={`relative isolate flex flex-col gap-8 lg:flex-row`}
                   >
@@ -80,17 +81,28 @@ function MyPage(props) {
                             {post.category}
                           </p>
                         </div>
-                        {/* ///// */}
+
                         <div className="relative z-10 rounded-full  px-3 py-1.5 font-medium bg-green-300">
-                          <Link href="#">{t("myPage:edit")}</Link>
+                          <button
+                            onClick={() =>
+                              router.push(
+                                `/newReview?edit=true&postId=${post.id}`
+                              )
+                            }
+                          ></button>{" "}
+                          {t("myPage:edit")}
                         </div>
                       </div>
                       <div className="group relative max-w-xl">
                         <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                          <Link href="#">
+                          <button
+                            onClick={() =>
+                              router.push(`/reviewPost?postId=${post.id}`)
+                            }
+                          >
                             <span className="absolute inset-0" />
                             {post.reviewName}
-                          </Link>
+                          </button>
                         </h3>
                         <h1>{post.film.title}</h1>
                         <div className="mt-5 text-sm line-clamp-3 text-gray-600">

@@ -1,19 +1,18 @@
 import prisma from "@/lib/prisma";
 
-export default async function addComment(req, res) {
-  const { postId, userId, textarea } = req.body;
+export default async function addLike(req, res) {
+  const { postId, userId } = req.body;
 
   try {
-    const result = await prisma.comment.create({
+    const result = await prisma.like.create({
       data: {
         reviewId: +postId,
         userId: userId,
-        content: textarea,
       },
     });
-
     res.json(result);
   } catch (error) {
+    res.status(403);
     console.log(error);
   }
 }

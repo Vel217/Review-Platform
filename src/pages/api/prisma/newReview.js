@@ -8,7 +8,7 @@ export default async function addNewReview(req, res) {
       reviewName: nameOfReview,
       filmId: +film,
       category: group,
-      authorId: "clhc83zgp0000lc09djw31scg",
+      authorId: userId,
       imageUrl: filesUrlDB,
       content: textContent,
       stars: +rating,

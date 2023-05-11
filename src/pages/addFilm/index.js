@@ -86,9 +86,18 @@ function NewFilm() {
               />
             </div>
           </div>
+          {error && (
+            <div className="items-center  flex w-2/3 rounded-lg bg-red-600 h-20 shadow mb-5">
+              {" "}
+              <div className="mx-auto text-xl text-black-300">
+                {" "}
+                {t("addFilm:mustFilled")}
+              </div>
+            </div>
+          )}
           <button
             type="button"
-            onClick={addFilm}
+            onClick={() => addFilm}
             className="rounded-full bg-indigo-600 px-3 py-1.5 m-5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             {t("addFilm:add")}
