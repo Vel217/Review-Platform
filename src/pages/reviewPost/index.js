@@ -1,6 +1,6 @@
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import { HeartIcon } from "@heroicons/react/24/outline";
@@ -30,7 +30,6 @@ function Item({
   // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
   const { t } = useTranslation();
   const [textarea, setTextarea] = useState("");
-  const [rating, setRating] = useState(0);
   const [ratingList, setRatingList] = useState(serializedRatingsOnPost);
   const [averageRating, setAverageRating] = useState(0);
   const [currentRating, setCurrentRating] = useState(undefined);
@@ -53,23 +52,23 @@ function Item({
     setLikePost(likeCont);
   }, [session, likesOnPost, likePost]);
 
-  // useEffect(() => {
-  //   let sumStars = ratingList.reduce((accum, item) => {
-  //     return accum + item.stars;
-  //   }, 0);
-  //   if (ratingList.length > 0) {
-  //     setAverageRating(sumStars / ratingList.length);
-  //   }
-  // }, []);
+  useEffect(() => {
+    let sumStars = ratingList.reduce((accum, item) => {
+      return accum + item.stars;
+    }, 0);
+    if (ratingList.length > 0) {
+      setAverageRating(sumStars / ratingList.length);
+    }
+  }, [session, ratingList]);
+
   useEffect(() => {
     let userRating = ratingList?.find((item) => {
       return item.userId === userId;
     });
     setCurrentRating(userRating);
-    setRating(userRating?.stars);
-  }, [session, ratingList]);
+  }, [session, ratingList, userId]);
 
-  console.log(currentRating);
+  // console.log(currentRating);
   const handleLike = async () => {
     if (likePost) {
       try {
@@ -111,10 +110,10 @@ function Item({
     }
   };
 
-  const ratingPost = async (stars) => {
-    console.log(currentRating, "currentRating");
-    const filmId = postContent.film.id
-    if (currentRating) {
+  const ratingPost = useCallback(
+    async (stars) => {
+      const filmId = postContent.film.id;
+
       try {
         const ratingId = currentRating?.id;
         const data = {
@@ -124,38 +123,23 @@ function Item({
           ratingId,
         };
         const response = await fetch("/api/prisma/rating", {
-          method: "PATCH",
+          method: currentRating ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         }).then((data) => data.json());
-        setRating(+stars);
+        setRatingList([
+          ...ratingList.filter((rating) => rating !== response.id),
+          response,
+        ]);
         if (response.status === 200) {
           console.log("okRating");
         }
       } catch (error) {
         console.log(error);
       }
-    } else {
-      try {
-        const data = {
-          filmId,
-          userId,
-          stars,
-        };
-        const response = await fetch("/api/prisma/rating", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }).then((data) => data.json());
-        setRating(+stars);
-        if (response.status === 200) {
-          console.log("okRating");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
+    },
+    [ratingList, currentRating, postContent, userId]
+  );
   const deletePost = async () => {
     try {
       const data = {
@@ -237,7 +221,7 @@ function Item({
                       {imgUrlAr.map((image, index) => (
                         <Tab
                           key={index}
-                          className="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4"
+                          className="aspect-h-1 aspect-w-1 relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4"
                         >
                           {({ selected }) => (
                             <>
@@ -331,7 +315,7 @@ function Item({
               </div>
 
               <div className="mt-3">
-                <div className="text-xl tracking-tight text-gray-900 flex justify-between">
+                <div className="text-xl tracking-tight text-gray-900 flex gap-7 ">
                   <div> {postContent.film.title}</div>
                   <div>
                     {t("comments:assessment")}: {postContent.stars}/10
@@ -339,6 +323,7 @@ function Item({
                   <div>
                     {format(new Date(postContent.createdAt), "dd/MM/yy")}
                   </div>
+
                   <div
                     className={`relative z-10 rounded-full text-sm bg-gray-50 px-3 py-1.5 font-medium ${
                       postContent.category === "neutral"
@@ -377,14 +362,19 @@ function Item({
                 <>{likesOnPost.length}</>
                 <div className="items-center">
                   <div>
-                    {averageRating ? averageRating : <p>еще нет оценок</p>}
+                    {averageRating ? (
+                      averageRating.toFixed(1)
+                    ) : (
+                      <p>not rated yet</p>
+                    )}
                   </div>
+
                   <Rating
                     name="customized-10"
                     onChange={(event, newValue) => {
                       ratingPost(newValue);
                     }}
-                    value={rating}
+                    value={currentRating?.stars ?? 0}
                     max={5}
                     emptyIcon={
                       <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
@@ -408,10 +398,10 @@ function Item({
                     }
                   >
                     <div className="flex justify-start justify-items-end gap-5">
-                      <p className="font-bold">{item.user.name}</p>
-                      <p className="text-slate-400 ">
+                      <div className="font-bold">{item.user.name}</div>
+                      <div className="text-slate-400 ">
                         {format(new Date(item.createdAt), "dd/MM/yy")}
-                      </p>
+                      </div>
                     </div>
                     <p className="text-slate-500 ">{item.content}</p>
                     <div className="flex justify-end">
@@ -529,7 +519,8 @@ export async function getServerSideProps({ locale, query }) {
 
   const ratingsOnPost = await prisma.rating.findMany({
     where: {
-      reviewId: +query.postId,
+      // reviewId: +query.postId,
+      filmId: post.filmId,
     },
   });
   const serializedRatingsOnPost = ratingsOnPost.map((rating) => ({

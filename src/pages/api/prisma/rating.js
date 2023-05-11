@@ -19,7 +19,7 @@ export default async function addLike(req, res) {
     }
   }
   if (req.method === "PATCH") {
-    const { postId, userId, stars, ratingId } = req.body;
+    const { postId, userId, stars, ratingId, filmId } = req.body;
 
     try {
       const result = await prisma.rating.update({

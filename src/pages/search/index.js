@@ -10,7 +10,7 @@ import { useRouter } from "next/router";
 function MyPage(props) {
   const { data: session } = useSession();
   const [userId, setUserId] = useState(session?.user.id);
-  //   const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
+  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
 
   const { t } = useTranslation();
   const [listReviews, setListReview] = useState(props.serializedReviews);

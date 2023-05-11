@@ -24,6 +24,8 @@ export const authOptions = {
     async session({ session, user }) {
       if (session?.user) {
         session.user.id = user.id;
+        session.user.isAdmin = user.isAdmin
+        session.user.name = user.name
       }
       return session;
     },

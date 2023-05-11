@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import parseLinks from "@/components/parseLink";
 import prisma from "@/lib/prisma";
 import { useRouter } from "next/router";
+import { format } from "date-fns";
 
 function MyPage(props) {
   const { data: session } = useSession();
@@ -62,11 +63,12 @@ function MyPage(props) {
                     <div>
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-x-4">
-                          {" "}
                           <p className="font-semibold text-xl text-gray-900">
                             {post.author.name}
                           </p>
-                          <p className="text-gray-500">{post.createdAt}</p>
+                          <p className="text-gray-500">
+                            {format(new Date(post.createdAt), "dd/MM/yy")}
+                          </p>
                           <p
                             className={`relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium ${
                               post.category === "neutral"
@@ -177,6 +179,11 @@ export async function getServerSideProps({ locale }) {
       film: {
         select: {
           title: true,
+          rating: {
+            select: {
+              stars: true,
+            },
+          },
         },
       },
       Comment: {
@@ -184,9 +191,14 @@ export async function getServerSideProps({ locale }) {
           id: true,
         },
       },
-      Rating: {
+      Taggings: {
         select: {
-          stars: true,
+          tagId: true,
+          tag: {
+            select: {
+              title: true,
+            },
+          },
         },
       },
 

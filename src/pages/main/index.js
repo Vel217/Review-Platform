@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import parseLinks from "@/components/parseLink";
@@ -9,24 +9,31 @@ import prisma from "@/lib/prisma";
 import { format } from "date-fns";
 import { useRouter } from "next/router";
 
+function sortByDate(reviews) {
+  reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return reviews;
+}
+
 function Index(props) {
-  const [listReviews, setListReview] = useState(props.serializedReviews);
+  const [listReviews, setListReviews] = useState(
+    sortByDate(props.serializedReviews)
+  );
   const router = useRouter();
 
   const { t } = useTranslation();
-  useEffect(() => {});
 
-  function sortPosts(option) {
-    if (option === "date") {
-      const posts = listReviews.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
-      setListReview(posts);
-    } else {
-      const posts = listReviews.sort((a, b) => b.stars - a.start);
-      setListReview(posts);
-    }
-  }
+  const sortPosts = useCallback(
+    (option) => {
+      const reviews = [...listReviews];
+      if (option === "date") {
+        setListReviews(sortByDate(reviews));
+      } else {
+        reviews.sort((a, b) => b.stars - a.stars);
+        setListReviews(reviews);
+      }
+    },
+    [listReviews]
+  );
 
   return (
     <div className="flex  w-full  justify-center bg-white">
@@ -37,11 +44,10 @@ function Index(props) {
             onChange={(ev) => {
               sortPosts(ev.target.value);
             }}
-            defaultValue="date"
             className="mb-2 block mt-2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
           >
-            <option value="date">{t("main:best")}</option>
-            <option value="rating">{t("main:new")}</option>
+            <option value="date">{t("main:new")}</option>
+            <option value="rating">{t("main:best")}</option>
           </select>
         </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">

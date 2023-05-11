@@ -111,6 +111,16 @@ function Header() {
               {t("common:myPage")}
             </Link>
 
+            {session?.user.isAdmin ? (
+              <>
+                <Link
+                  href="/adminDashboard"
+                  className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
+                >
+                  Dashboard
+                </Link>
+              </>
+            ) : null}
             <input
               type="text"
               name="name"
