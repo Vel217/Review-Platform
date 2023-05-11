@@ -125,7 +125,9 @@ function Review(props) {
     ev.preventDefault();
     // setUserId(session.user.id);
     let filesUrlDB;
-    if (filesUrls.length > 1) {
+    if (filesUrls.length === 1) {
+      filesUrlDB = filesUrls[0];
+    } else if (filesUrls.length > 1) {
       filesUrlDB = filesUrls.join(",");
     } else {
       filesUrlDB = "";
@@ -144,27 +146,26 @@ function Review(props) {
       };
 
       if (
-        selectedFilmId === "" ||
+        film === "" ||
         group === "" ||
         nameOfReview === "" ||
         rating === 0 ||
-        // session.user.id === [] ||
         textContent === ""
       ) {
         return setError(true);
       } else {
-        if (EditParams) {
-          const response = await fetch(`/api/prisma/updateReview`, {
+        if (!EditParams) {
+          const response = await fetch(`/api/prisma/newReview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
           });
           if (response.status === 200) {
             console.log("ok");
-            // router.push("/main");
+            router.push("/main");
           }
         } else {
-          const response = await fetch(`/api/prisma/newReview`, {
+          const response = await fetch(`/api/prisma/updateReview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -296,7 +297,7 @@ function Review(props) {
             <div className="min-h-full flex gap-2 px-4 py-3 sm:py-4">
               <div className="w-1/2 ">
                 <textarea
-                  rows={8}
+                  rows={10}
                   className="block w-full resize-none rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   value={textContent}
                   onChange={(ev) => {
@@ -304,8 +305,8 @@ function Review(props) {
                   }}
                 />
               </div>
-              <div className="w-1/2 block  rounded-md border-0 p-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
-                <article class="prose prose-sm">
+              <div className="w-1/2 block  rounded-md border-0 p-1 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                <article className="prose prose-sm h-60 overflow-y-auto">
                   <ReactMarkdown>{textContent}</ReactMarkdown>
                 </article>
               </div>

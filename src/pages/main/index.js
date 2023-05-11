@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 function Index(props) {
   const [listReviews, setListReview] = useState(props.serializedReviews);
   const router = useRouter();
+
   const { t } = useTranslation();
   useEffect(() => {});
 
@@ -49,45 +50,55 @@ function Index(props) {
               {listReviews.map((post) => (
                 <article
                   key={post.id}
-                  className={`relative isolate flex flex-col  shadow gap-5 sm:rounded-md p-3 lg:flex-row ${
-                    post.category === "neutral"
-                      ? "bg-slate-100"
-                      : post.category === "positive"
-                      ? "bg-green-100"
-                      : "bg-red-100"
-                  }`}
+                  onClick={() => {
+                    router.push(`/reviewPost?postId=${post.id}`);
+                  }}
+                  className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8 px-5"
                 >
-                  <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
-                    {parseLinks(post.imageUrl) === null ? (
-                      <img
-                        src={movieFilm.src}
-                        alt=""
-                        className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
-                      />
-                    ) : (
-                      <img
-                        src={parseLinks(post.imageUrl)[0]}
-                        alt=""
-                        className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
-                      />
-                    )}
-                    <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
-                  </div>
                   <div>
+                    <div className="relative aspect-square sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
+                      {parseLinks(post.imageUrl) === null ? (
+                        <img
+                          src={movieFilm.src}
+                          alt=""
+                          className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={parseLinks(post.imageUrl)[0]}
+                          alt=""
+                          className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                        />
+                      )}
+                      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 mt-10 px-5  sm:mt-16 sm:px-0 lg:mt-0">
                     <div className="flex items-center gap-x-4 text-xs">
                       <p className="font-semibold text-xl text-gray-900">
                         {post.author.name}
                       </p>
+                      <div
+                        className={`relative z-10 rounded-full text-sm bg-gray-50 px-3 py-1.5 font-medium ${
+                          post.category === "neutral"
+                            ? "bg-slate-100"
+                            : post.category === "positive"
+                            ? "bg-green-100"
+                            : "bg-red-100"
+                        }`}
+                      >
+                        {post.category}
+                      </div>
+
                       <p className="text-gray-500">
                         {format(new Date(post.createdAt), "dd/MM/yy")}
                       </p>
                     </div>
                     <div className="group relative max-w-xl">
                       <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                        <Link href="#">
-                          <span className="absolute inset-0" />
-                          {post.reviewName}
-                        </Link>
+                        <span className="absolute inset-0" />
+                        {post.reviewName}
                       </h3>
                       <h1>{post.film.title}</h1>
                       <div className="mt-5 text-sm line-clamp-3 text-gray-600">
@@ -172,7 +183,7 @@ export async function getStaticProps({ locale }) {
     createdAt: review.createdAt.toISOString(),
   }));
 
-  console.log("serializedReviews", serializedReviews);
+  // console.log("serializedReviews", serializedReviews);
   return {
     props: {
       ...(await serverSideTranslations(locale, ["main", "common"])),

@@ -1,175 +1,363 @@
 import Link from "next/link";
-import React, { useState } from "react";
+
+import Rating from "@mui/material/Rating";
+import StarIcon from "@mui/icons-material/Star";
+import React, { useEffect, useState } from "react";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
-// import prisma from "@/lib/prisma";
-// import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-const listComments = [
-  {
-    id: 1,
-    userName: "Popka",
-    text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    data: "12.04.2022",
-  },
-  {
-    id: 2,
-    userName: "Popka",
-    text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    data: "12.04.2022",
-  },
-  {
-    id: 3,
-    userName: "Popka",
-    text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
-    data: "12.04.2022",
-  },
-];
-const post = {
-  id: 1,
-  title: "Boost your conversion rate",
-  film: "titanic",
-  group: "neutral",
-  text: "Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. NIllo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo. Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat consectetur nulla deserunt vel iusto corrupti dicta laboris incididunt.",
-  imageUrl:
-    "https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=3603&q=80",
-  date: "Mar 16, 2020",
-  author: "Michael Foster",
-  rating: "4",
-};
+import { HeartIcon } from "@heroicons/react/24/outline";
+import ReactMarkdown from "react-markdown";
+import { Disclosure, RadioGroup, Tab } from "@headlessui/react";
+import { useSession } from "next-auth/react";
+import prisma from "@/lib/prisma";
+import parseLinks from "@/components/parseLink";
+import movieFilm from "../../../public/assets/images/movie-film2.png";
+import { format } from "date-fns";
+import { useRouter } from "next/router";
 
-function Item() {
+// const postContent = {
+//   reviewName: "Crash of titanic",
+//   filmId: "Titanic",
+//   category: "positive",
+//   stars: 4,
+//   authorId: "Marat",
+//   createdAt: "10.05.2022",
+//   imageUrl: [
+//     "http://res.cloudinary.com/dfyhsmubh/image/upload/v1683551975/wme6zpmftiscwkjfkaal.png",
+//     "http://res.cloudinary.com/dfyhsmubh/image/upload/v1683551976/iessezkywmcpb0e7ohde.png",
+//     "http://res.cloudinary.com/dfyhsmubh/image/upload/v1683551978/udzi9pseu2nboqog3msu.png",
+//   ],
+
+//   content:
+//     "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised worThere are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look ds which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.",
+// };
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+// const listComments = [
+//   {
+//     id: 1,
+//     userName: "Popka",
+//     content:
+//       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+//     createAt: "12.04.2022",
+//   },
+//   {
+//     id: 2,
+//     userName: "Popka",
+//     content:
+//       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+//     createAt: "12.04.2022",
+//   },
+//   {
+//     id: 3,
+//     userName: "Popka",
+//     content:
+//       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+//     createAt: "12.04.2022",
+//   },
+// ];
+
+function Item({
+  serializedPost,
+  serializedLikeOnPost,
+  serializedCommentsOnPost,
+  queryId,
+}) {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [userId, setUserId] = useState(session?.user.id);
   const { t } = useTranslation();
   const [textarea, setTextarea] = useState("");
-  // const [post, setPost] = useState('')
+  const [rating, setRating] = useState(0);
+  const [likePost, setLikePost] = useState(false);
+  const [postContent, setPostContent] = useState(serializedPost[0]);
 
+  const [listComments, setListComments] = useState(serializedCommentsOnPost);
+  const [likes, setLikes] = useState(serializedLikeOnPost);
+  const [postId, setPostId] = useState(queryId);
+  const [imgUrlAr, setImgUrlAr] = useState([]);
+  useEffect(() => {
+    const a = parseLinks(postContent.imageUrl);
+    setImgUrlAr(a);
+  }, []);
+
+  //
+  // async
+  //
+  const handleLike = () => {
+    if (likePost) {
+      // await sendRequestToRemoveLike();
+      console.log("ToRemoveLike");
+    } else {
+      console.log("ToAddLike");
+      // await sendRequestToAddLike();
+    }
+
+    setLikePost(!likePost);
+  };
+  //
+  // async
+  //
+  const ratingPost = () => {
+    if (rating) {
+      // await sendRequestToRemoveRating();
+      console.log("ToRemoveRating");
+    } else {
+      console.log("ToAddRating");
+      // await sendRequestToAddRating();
+    }
+  };
+  const deletePost = async () => {
+    try {
+      const data = {
+        postId,
+      };
+      const response = await fetch("/api/prisma/deletePost", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (response.status === 200) {
+        router.push("/main");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const addComment = async () => {
+    try {
+      const data = { postId, userId, textarea };
+
+      const response = await fetch("/api/prisma/addComment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (response.status === 200) {
+        const data = { postId, userId, textarea };
+
+        const response = await fetch("/api/prisma/getComment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        let a = await response.json();
+        setListComments(a);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       <div className="flex  w-full justify-center items-center flex-col">
-        <div className="mx-auto max-w-7xl px-6 py-2 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:max-w-4xl">
-            <div className="mt-5 space-y-8 lg:mt-10 lg:space-y-10">
-              <article
-                key={post.id}
-                className={`relative isolate flex flex-col gap-8 lg:flex-row`}
-              >
-                <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
-                  <img
-                    src={post.imageUrl !== "" ? post.imageUrl : movieFilm.src}
-                    alt=""
-                    className="absolute inset-0 h-fit w-full rounded-2xl bg-gray-50 object-cover"
-                  />
-                  <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-x-4">
-                      {" "}
-                      <p className="font-semibold text-xl text-gray-900">
-                        {post.author}
-                      </p>
-                      <p className="text-gray-500">{post.date}</p>
-                      <p
-                        className={`relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium ${
-                          post.group === "neutral"
-                            ? "bg-slate-100"
-                            : post.group === "positive"
-                            ? "bg-green-100"
-                            : "bg-red-100"
-                        }`}
-                      >
-                        {post.group}
-                      </p>
-                    </div>
-                    {/* ///// */}
-                    <div>
-                      <Link href="#">{t("comments:edit")}</Link>
-                    </div>
-                  </div>
-                  <div className="group relative max-w-xl">
-                    <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                      <Link href="#">
-                        <span className="absolute inset-0" />
-                        {post.title}
-                      </Link>
-                    </h3>
-                    <h1>{post.film}</h1>
-                    <p className="mt-5 text-sm  text-gray-600">{post.text}</p>
-                  </div>
-                  <div className="mt-6 flex border-t border-gray-900/5 pt-6 ">
-                    <div className="relative flex items-center gap-x-4 shrink w-full">
-                      <div className="text-sm leading-6 flex gap-5 w-full">
-                        <div>
-                          <button>
-                            like
-                            <svg
-                              width="30px"
-                              height="30px"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                clipRule="evenodd"
-                                d="M8.5 7C7.11024 7 6 8.11336 6 9.46667C6 10.9908 6.88166 12.6171 8.24626 14.2099C9.39162 15.5468 10.7839 16.7532 12 17.7264C13.2161 16.7532 14.6084 15.5468 15.7537 14.2099C17.1183 12.6171 18 10.9908 18 9.46667C18 8.11336 16.8898 7 15.5 7C14.1102 7 13 8.11336 13 9.46667C13 10.019 12.5523 10.4667 12 10.4667C11.4477 10.4667 11 10.019 11 9.46667C11 8.11336 9.88976 7 8.5 7ZM12 6.6587C11.1735 5.64559 9.91012 5 8.5 5C6.02376 5 4 6.99079 4 9.46667C4 11.7183 5.26747 13.807 6.72743 15.5111C8.20812 17.2395 10.0243 18.7293 11.3857 19.7891C11.747 20.0703 12.253 20.0703 12.6143 19.7891C13.9757 18.7293 15.7919 17.2395 17.2726 15.5111C18.7325 13.807 20 11.7183 20 9.46667C20 6.99079 17.9762 5 15.5 5C14.0899 5 12.8265 5.64559 12 6.6587Z"
-                                fill="#000000"
+        <div className="mx-auto max-w-2xl px-4 py-5 sm:px-6 sm:py-10 lg:max-w-7xl lg:px-8">
+          <div className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8 px-5">
+            <Tab.Group as="div" className="flex flex-col-reverse">
+              <div className="mx-auto mt-6 hidden w-full max-w-2xl sm:block lg:max-w-none">
+                <Tab.List className="grid grid-cols-4 gap-6">
+                  {imgUrlAr ? (
+                    <>
+                      {imgUrlAr.map((image, index) => (
+                        <Tab
+                          key={index}
+                          className="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4"
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span className="absolute inset-0 overflow-hidden  rounded-md">
+                                <img
+                                  src={image}
+                                  className="h-full w-full object-cover object-center"
+                                />
+                              </span>
+                              <span
+                                className={classNames(
+                                  selected
+                                    ? "ring-gray-500"
+                                    : "ring-transparent",
+                                  "pointer-events-none absolute inset-0 rounded-md ring-2 ring-offset-2"
+                                )}
+                                aria-hidden="true"
                               />
-                            </svg>
-                          </button>
-                        </div>
+                            </>
+                          )}
+                        </Tab>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      <Tab className="relative flex h-24 cursor-pointer items-center justify-center rounded-md bg-white text-sm font-medium uppercase text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring focus:ring-opacity-50 focus:ring-offset-4">
+                        <img
+                          src={movieFilm.src}
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </Tab>
+                    </>
+                  )}
+                </Tab.List>
+              </div>
 
-                        <div>
-                          <button>
-                            {t("comments:comments")}
-                            <svg
-                              fill="#000000"
-                              width="30px"
-                              height="30px"
-                              viewBox="0 0 32 32"
-                              id="Outlined"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g id="Fill">
-                                <path d="M26,12H24V6a3,3,0,0,0-3-3H6A3,3,0,0,0,3,6V24.41l5.12-5.12A1.05,1.05,0,0,1,8.83,19H12v3a3,3,0,0,0,3,3h8.17a1.05,1.05,0,0,1,.71.29L29,30.41V15A3,3,0,0,0,26,12ZM12,15v2H8.83a3,3,0,0,0-2.12.88L5,19.59V6A1,1,0,0,1,6,5H21a1,1,0,0,1,1,1v6H15A3,3,0,0,0,12,15ZM27,25.59l-1.71-1.71A3,3,0,0,0,23.17,23H15a1,1,0,0,1-1-1V15a1,1,0,0,1,1-1H26a1,1,0,0,1,1,1Z" />
-                              </g>
-                            </svg>
-                          </button>
-                        </div>
-                        <div>
-                          {t("comments:rating")}: {post.rating}/5{" "}
-                        </div>
-                      </div>
-                    </div>
+              <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
+                {imgUrlAr ? (
+                  <>
+                    {imgUrlAr.map((image, index) => (
+                      <Tab.Panel key={index}>
+                        <img
+                          src={image}
+                          className="h-full w-full object-cover  object-center sm:rounded-lg"
+                        />
+                      </Tab.Panel>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <Tab.Panel>
+                      <img
+                        src={movieFilm.src}
+                        className="h-full w-full object-cover  object-center sm:rounded-lg"
+                      />
+                    </Tab.Panel>
+                  </>
+                )}
+              </Tab.Panels>
+            </Tab.Group>
+            <div className=" lg:col-span-2 mt-10 px-5  sm:mt-16 sm:px-0 lg:mt-0">
+              <div className="flex flex-col gap-5">
+                <div className="text-2xl flex justify-between font-bold tracking-tight text-gray-900">
+                  <div> {postContent.author.name}</div>
+                  <div className="flex gap-5">
+                    {session?.user.name !== postContent.author.name ? (
+                      <button
+                        type="button"
+                        onClick={deletePost}
+                        className="inline-flex items-center rounded-md bg-red-400 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300"
+                      >
+                        delete
+                      </button>
+                    ) : null}
+                    {session?.user.name !== postContent.author.name ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(`/newReview?edit=true&postId=${postId}`)
+                        }
+                        className="inline-flex items-center rounded-md bg-teal-400 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+                      >
+                        edit
+                      </button>
+                    ) : null}
                   </div>
                 </div>
-              </article>
+                <h1 className="text-xl font-bold tracking-tight text-gray-900">
+                  {postContent.reviewName}
+                </h1>
+              </div>
+
+              <div className="mt-3">
+                <div className="text-xl tracking-tight text-gray-900 flex justify-between">
+                  <div> {postContent.film.title}</div>
+                  <div>assessment: {postContent.stars}/10</div>
+                  <div>
+                    {format(new Date(postContent.createdAt), "dd/MM/yy")}
+                  </div>
+                  <div
+                    className={`relative z-10 rounded-full text-sm bg-gray-50 px-3 py-1.5 font-medium ${
+                      postContent.category === "neutral"
+                        ? "bg-slate-100"
+                        : postContent.category === "positive"
+                        ? "bg-green-100"
+                        : "bg-red-100"
+                    }`}
+                  >
+                    {postContent.category}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="space-y-6 text-base text-gray-700" />
+                <ReactMarkdown>{postContent.content}</ReactMarkdown>
+              </div>
+              <div className="flex justify-center items-center gap-20">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleLike();
+                  }}
+                  className="flex items-center justify-center rounded-md px-3 py-3 "
+                >
+                  <HeartIcon
+                    className={`h-20 w-20 flex-shrink-0   px-3 py-3 ${
+                      likePost
+                        ? " text-red-500 fill-current"
+                        : " text-gray-200 fill-current"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only">Add to favorites</span>
+                </button>
+                <div className="items-center">
+                  <Rating
+                    name="customized-10"
+                    onChange={(event, newValue) => {
+                      ratingPost;
+                      setRating(newValue);
+                    }}
+                    value={rating}
+                    max={5}
+                    defaultValue={0}
+                    emptyIcon={
+                      <StarIcon style={{ opacity: 0.55 }} fontSize="inherit" />
+                    }
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="mx-auto max-w-2xl lg:max-w-4xl ">
+
+        {/* ????? */}
+
+        <div className=" max-w-2xl w-1/2 lg:max-w-4xl ">
           <ul role="list" className="rounded-md  shadow   ">
-            {listComments.map((item) => (
-              <li
-                key={item.id}
-                className={
-                  "p-4 h-150 my-5 py-2 rounded-md shadow-lg  sm:rounded-md sm:px-6 flex flex-col gap-3 bg-white"
-                }
-              >
-                <div className="flex justify-start justify-items-end gap-5">
-                  <p className="font-bold">{item.userName}</p>
-                  <p className="text-slate-400 ">{item.data}</p>
-                </div>
-                <p className="text-slate-500 ">{item.text}</p>
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    className="  rounded-md bg-red-100 px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-200"
+            {listComments.length !== 0 ? (
+              <>
+                {listComments.map((item) => (
+                  <li
+                    key={item.id}
+                    className={
+                      "p-4 h-auto my-5 py-2 rounded-md shadow-lg  sm:rounded-md sm:px-6 flex flex-col gap-3 bg-white"
+                    }
                   >
-                    {t("comments:delete")}
-                  </button>
+                    <div className="flex justify-start justify-items-end gap-5">
+                      <p className="font-bold">{item.user.name}</p>
+                      <p className="text-slate-400 ">
+                        {format(new Date(item.createdAt), "dd/MM/yy")}
+                      </p>
+                    </div>
+                    <p className="text-slate-500 ">{item.content}</p>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        className="  rounded-md bg-red-100 px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-red-200"
+                      >
+                        {t("comments:delete")}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="p-4  h-auto my-5 py-2 rounded-md shadow-lg  sm:rounded-md sm:px-6 flex flex-col gap-3 bg-white">
+                  Здесь пока нет коментариев
                 </div>
-              </li>
-            ))}
+              </>
+            )}
             <div className="p-4  mb-4 shadow sm:rounded-md sm:px-6 mt-2 bg-white">
               <div className="">
                 <div className="flex items-start space-x-4">
@@ -193,6 +381,7 @@ function Item() {
                         <div className="flex-shrink-0">
                           <button
                             type="button"
+                            onClick={addComment}
                             className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                           >
                             {t("comments:postComment")}
@@ -213,10 +402,65 @@ function Item() {
 
 export default Item;
 
-export async function getStaticProps({ locale }) {
+export async function getServerSideProps({ locale, query }) {
+  const post = await prisma.review.findMany({
+    where: {
+      id: +query.postId,
+    },
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+      film: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  });
+  const serializedPost = post.map((postContent) => ({
+    ...postContent,
+    createdAt: postContent.createdAt.toISOString(),
+  }));
+  const likeOnPost = await prisma.like.findMany({
+    where: {
+      reviewId: +query.postId,
+    },
+  });
+  const serializedLikeOnPost = likeOnPost.map((likes) => ({
+    ...likes,
+    createdAt: likes.createdAt.toISOString(),
+  }));
+  const commentsOnPost = await prisma.comment.findMany({
+    where: {
+      reviewId: +query.postId,
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+  const serializedCommentsOnPost = commentsOnPost.map((comments) => ({
+    ...comments,
+    createdAt: comments.createdAt.toISOString(),
+  }));
+  const queryId = query.postId;
+  // console.log("serializedPost", serializedPost);
+  // console.log("serializedCommentsOnPost", serializedCommentsOnPost);
+  // console.log("query", query);
+
   return {
     props: {
       ...(await serverSideTranslations(locale, ["comments", "common"])),
+      serializedPost,
+      serializedLikeOnPost,
+      serializedCommentsOnPost,
+      queryId,
     },
   };
 }

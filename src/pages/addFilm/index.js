@@ -20,7 +20,7 @@ function NewFilm() {
         setError(true);
       } else {
         const data = { filmName, filmYear, filmDirector };
-        const response = await fetch("api/prisma/newFilm", {
+        const response = await fetch("/api/prisma/newFilm", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
