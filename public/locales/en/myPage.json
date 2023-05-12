@@ -1,1 +1,8 @@
-{"create":"Create new review","Edit":"Edit","myRev":"My reviews","rating":"Rating"}
+{
+  "create": "Create new review",
+  "Edit": "Edit",
+  "myRev": "My reviews",
+  "rating": "Rating",
+  "average": "average rating of movie:",
+  "notYet": "not rated yet"
+}

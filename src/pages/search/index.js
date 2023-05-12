@@ -95,26 +95,63 @@ function MyPage(props) {
 
 export default MyPage;
 
-export async function getServerSideProps({ locale }) {
-  //   const reviews = await prisma.review.findMany({
-  //     include: {
-  //       author: {
-  //         select: {
-  //           name: true,
-  //         },
-  //       },
-  //       film: {
-  //         select: {
-  //           title: true,
-  //         },
-  //       },
-  //     },
-  //   });
+export async function getServerSideProps({ locale, query }) {
+  const queryTag = query?.tag;
+  const querySearch = query?.search;
+  const reviews = await prisma.review.findMany({
+    where: {
+      Taggings: {
+        some: {
+          tag: {
+            title: queryTag,
+          },
+        },
+      },
+    },
 
-  //   const serializedReviews = reviews.map((review) => ({
-  //     ...review,
-  //     createdAt: review.createdAt.toISOString(),
-  //   }));
+    include: {
+      author: {
+        select: {
+          name: true,
+        },
+      },
+      Taggings: {
+        select: {
+          tagId: true,
+          tag: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      },
+      Like: {
+        select: {
+          id: true,
+        },
+      },
+      Comment: {
+        select: {
+          id: true,
+        },
+      },
+      film: {
+        select: {
+          title: true,
+          rating: {
+            select: {
+              stars: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const serializedReviews = reviews.map((review) => ({
+    ...review,
+    createdAt: review.createdAt.toISOString(),
+  }));
   return {
     props: {
       ...(await serverSideTranslations(locale, ["search", "common"])),

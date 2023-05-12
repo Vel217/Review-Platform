@@ -16,7 +16,7 @@ function Review(props) {
   const EditParams = Boolean(props.serializedReviewEdit);
   const { data: session } = useSession();
   const [userId, setUserId] = useState(session?.user.id);
-  // const [userId, setUserId] = useState( "clhc83zgp0000lc09djw31scg")
+  // const [userId, setUserId] = useState("clhc83zgp0000lc09djw31scg");
 
   const [film, setFilm] = useState("");
   const [rating, setRating] = useState(0);
@@ -30,14 +30,17 @@ function Review(props) {
   const ref = useRef([]);
   const [textContent, setTextContent] = useState("");
   const [error, setError] = useState(false);
-  const [tagCloud, setTagCloud] = useState([...props.serializedTags]);
-  const [selectedTag, setSelectedTag] = useState([]);
-  const [tagNew, setTagNew] = useState([]);
+
+  const [tagCloud, setTagCloud] = useState([...props.tagsTitle]);
+  const [reviewTags, setReviewTags] = useState([]);
+
   const [selectedFilmId, setSelectedFilmId] = useState("");
   const [filmList, setFilmList] = useState([...props.serializedFilms]);
   const router = useRouter();
   const [postId, setPostId] = useState(props.query.postId);
-
+  const [userList, setUserList] = useState(props.serializedUserList);
+  const [selectedUser, setSelectedUser] = useState(undefined);
+  const [errorPost, setErrorPost] = useState(false);
   useEffect(() => {
     if (props.serializedReviewEdit) {
       setSelectedFilmId(props.serializedReviewEdit.filmId);
@@ -121,7 +124,7 @@ function Review(props) {
 
   useEffect(() => {
     setError(false);
-  }, [film, nameOfReview, group, selectedTag, textContent, rating]);
+  }, [film, nameOfReview, group, textContent, rating]);
 
   const addReview = async (ev) => {
     ev.preventDefault();
@@ -134,6 +137,8 @@ function Review(props) {
     } else {
       filesUrlDB = "";
     }
+    setErrorPost(false);
+    const reviewTagsObj = reviewTags.map((e) => ({ title: e }));
 
     try {
       const data = {
@@ -145,6 +150,8 @@ function Review(props) {
         filesUrlDB,
         rating,
         postId,
+        reviewTags,
+        reviewTagsObj,
       };
 
       if (
@@ -163,18 +170,20 @@ function Review(props) {
             body: JSON.stringify(data),
           });
           if (response.status === 200) {
-            console.log("ok");
             router.push("/main");
+          } else {
+            setErrorPost(true);
           }
         } else {
           const response = await fetch(`/api/prisma/updateReview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
-          });
+          })
+            .then((data) => data.json())
+            .then((data) => setReviewId(data.id));
           if (response.status === 200) {
-            console.log("ok");
-            // router.push("/main");
+            router.push("/main");
           }
         }
       }
@@ -182,23 +191,48 @@ function Review(props) {
       console.log(error);
     }
   };
-  const addNewTag = async () => {
-    data = {};
-  };
 
   return (
     <>
-      <div className="flex flex-col  mt-5 w-full items-center mb-5">
-        <div className="flex justify-start">
+      <div className="flex flex-col lg: mt-5 w-full items-center mb-5">
+        <div className="absolute  left-3 top-10 lg:left-5 lg:top-20">
           {" "}
           <button
-            className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className=" rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
             onClick={() => router.back()}
           >
             {t("review:back")}
           </button>
         </div>
 
+        {session?.user.isAdmin ? (
+          <>
+            {t("review:Admin")}
+            <Autocomplete
+              freeSolo
+              className="border-none hover:border-none rounded-md bg-transparent py-1.5 pl-1 focus:ring-0 active:border-none sm:text-sm sm:leading-6  w-full"
+              id="free-solo-2-demo"
+              disableClearable
+              // value={EditParams ? props.serializedReviewEdit.filmId : null}
+              onChange={(event, value) => setSelectedUser(value)}
+              options={userList.map((user) => user.name)}
+              getOptionLabel={(userName) => {
+                const user = userList.find((user) => user.name === userName);
+                return user ? `${user.title}, ${user.year}` : "";
+              }}
+              renderInput={(params) => (
+                <TextField
+                  className=" border-none hover:border-none bg-transparent active:border-none py-1.5 pl-1 sm:text-sm sm:leading-6  w-full"
+                  {...params}
+                  InputProps={{
+                    ...params.InputProps,
+                    type: "search user",
+                  }}
+                />
+              )}
+            />
+          </>
+        ) : null}
         <h2 className="text-base text-center font-semibold leading-7 ">
           {EditParams ? (
             <>{t("review:editEd")}</>
@@ -206,11 +240,11 @@ function Review(props) {
             <>{t("review:addNewRev")} </>
           )}
         </h2>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden  lg:w-2/3 w-full rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:nameOfMovie")}
           </div>
-          <div className=" flex gap-5 px-4 py-5 sm:p-6 ">
+          <div className=" flex gap-5 flex-col lg:flex  px-4 py-5 sm:p-6 ">
             <Autocomplete
               freeSolo
               className="border-none hover:border-none rounded-md bg-transparent py-1.5 pl-1 focus:ring-0 active:border-none sm:text-sm sm:leading-6  w-full"
@@ -245,7 +279,7 @@ function Review(props) {
             </Link>
           </div>
         </div>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden lg:w-2/3 w-full rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:nameOfRev")}
           </div>
@@ -254,11 +288,11 @@ function Review(props) {
               type="text"
               value={nameOfReview}
               onChange={(ev) => setNameOfReview(ev.target.value)}
-              className="border-1 rounded-md bg-transparent py-1.5 pl-1 focus:ring-0 sm:text-sm sm:leading-6  w-1/2"
+              className="border-1 w-full rounded-md bg-transparent py-1.5 pl-1 focus:ring-0 sm:text-sm sm:leading-6  lg:w-1/2"
             />
           </div>
         </div>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden lg:w-2/3 w-full rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:groupOfReview")}
           </div>
@@ -269,7 +303,7 @@ function Review(props) {
                 setGroup(ev.target.value);
               }}
               value={group}
-              className="mt-2 block w-1/2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              className="mt-2 block w-full lg:w-1/2 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
             >
               <option value=""> </option>
               <option value="positive">{t("review:positive")}</option>
@@ -278,7 +312,7 @@ function Review(props) {
             </select>
           </div>
         </div>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden lg:w-2/3 w-full rounded-lg bg-white shadow">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:tagOfReview")}
           </div>
@@ -289,20 +323,17 @@ function Review(props) {
               id="tags-outlined"
               className="border-none hover:border-none rounded-md bg-transparent py-1.5 focus:ring-0 active:border-none sm:text-sm sm:leading-6 w-full"
               options={tagCloud}
-              getOptionLabel={(option) => option.title}
+              getOptionLabel={(option) => option}
               filterSelectedOptions
               onChange={(event, value) => {
                 const newValue = value[value.length - 1];
-                if (!tagCloud.includes(newValue)) {
-                  setTagCloud([...tagCloud, newValue]);
-                }
-                setSelectedTag([...selectedTag, newValue]);
+                setReviewTags([...reviewTags, newValue]);
               }}
               renderInput={(params) => <TextField {...params} />}
             />
           </div>
         </div>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3  rounded-lg bg-white shadow ">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden lg:w-2/3 w-full  rounded-lg bg-white shadow ">
           <div className="px-4 py-5 sm:px-6 font-bold justify-start">
             {t("review:textOfReview")}
           </div>
@@ -326,7 +357,7 @@ function Review(props) {
             </div>
           </div>
         </div>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow px-6 py-4">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden lg:w-2/3 w-full rounded-lg bg-white shadow px-6 py-4">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:addPic")}
           </div>
@@ -394,7 +425,7 @@ function Review(props) {
             </div>
           </div>
         </div>
-        <div className="items-center divide-y divide-gray-200 overflow-hidden w-2/3 rounded-lg bg-white shadow mb-5">
+        <div className="items-center divide-y divide-gray-200 overflow-hidden lg:w-2/3 w-full rounded-lg bg-white shadow mb-5">
           <div className="px-4 py-5 sm:px-6 font-bold">
             {t("review:rating")}
           </div>
@@ -414,11 +445,20 @@ function Review(props) {
           </div>
         </div>
         {error && (
-          <div className="items-center  flex w-2/3 rounded-lg bg-red-600 h-20 shadow mb-5">
+          <div className="items-center  flex lg:w-2/3 w-full rounded-lg bg-red-600 h-20 shadow mb-5">
             {" "}
             <div className="mx-auto text-xl text-black-300">
               {" "}
               {t("review:mustFilled")}
+            </div>
+          </div>
+        )}
+        {errorPost && (
+          <div className="items-center  flex lg:w-2/3 w-full rounded-lg bg-red-600 h-20 shadow mb-5">
+            {" "}
+            <div className="mx-auto text-xl text-black-300">
+              {" "}
+              {t("review:error")}
             </div>
           </div>
         )}
@@ -442,12 +482,20 @@ export async function getServerSideProps({ locale, query }) {
     ...film,
     createdAt: film.createdAt.toISOString(),
   }));
+  const userList = await prisma.user.findMany();
+  const serializedUserList = userList.map((user) => ({
+    ...user,
+    createdAt: user.createdAt.toISOString(),
+  }));
 
   const tags = await prisma.tag.findMany();
   const serializedTags = tags.map((tag) => ({
     ...tag,
     createdAt: tag.createdAt.toISOString(),
   }));
+  const tagsTitle = serializedTags.map((tag) => {
+    return tag.title;
+  });
 
   let serializedReviewEdit = null;
   if (query.postId) {
@@ -467,7 +515,9 @@ export async function getServerSideProps({ locale, query }) {
       serializedFilms,
       serializedTags,
       serializedReviewEdit,
+      tagsTitle,
       query,
+      serializedUserList,
     },
     // notFound: true,
   };

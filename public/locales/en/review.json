@@ -16,5 +16,7 @@
   "rating": "Rating",
   "submit": "Submit",
   "tagOfReview": "Tag of review",
-  "textOfReview": "Text of review (with MarkDown syntax)"
+  "textOfReview": "Text of review (with MarkDown syntax)",
+  "Admin": "You can select a user to write on their behalf",
+  "error": "Error sending, please try again"
 }

@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 function sortByDate(reviews) {
   reviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -34,10 +35,22 @@ function Index(props) {
     },
     [listReviews]
   );
+  const [tagCloud, setTagCloud] = useState(props.serializedTagCloud);
 
   return (
     <div className="flex  w-full  justify-center bg-white">
       <div className="bg-white ">
+        <div class="flex w-full  justify-center gap-2 flex-wrap p-4">
+          {tagCloud.map((tag) => (
+            <>
+              <Link href={`/search?tag=${tag.title}`} key={tag.title}>
+                <span class="bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-600">
+                  #{tag.title}
+                </span>
+              </Link>
+            </>
+          ))}
+        </div>
         <div className="w-screen px-6 mx-auto divide-y divide-gray-200 overflow-hidden  flex justify-start  rounded-lg bg-white shadow">
           <select
             name="sortedPost"
@@ -55,38 +68,36 @@ function Index(props) {
             <div className="mt-5 space-y-8 lg:mt-10 lg:space-y-10">
               {listReviews.map((post) => (
                 <article
-                  onClickCapture={() =>
-                    router.push(`/reviewPost?postId=${post.id}`)
-                  }
                   key={post.id}
                   onClick={() => {
                     router.push(`/reviewPost?postId=${post.id}`);
                   }}
-                  className="lg:grid lg:grid-cols-3 lg:items-start lg:gap-x-8 px-5"
+                  className="relative isolate flex flex-col gap-8 lg:flex-row"
                 >
-                  <div>
-                    <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
-                      {parseLinks(post.imageUrl) === null ? (
-                        <img
-                          src={movieFilm.src}
-                          alt=""
-                          className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
-                        />
-                      ) : (
-                        <img
-                          src={parseLinks(post.imageUrl)[0]}
-                          alt=""
-                          className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
-                        />
-                      )}
-                      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
-                    </div>
+                  <div className="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
+                    {parseLinks(post.imageUrl) === null ? (
+                      <img
+                        src={movieFilm.src}
+                        alt=""
+                        className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={parseLinks(post.imageUrl)[0]}
+                        alt=""
+                        className="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
                   </div>
 
-                  <div className="lg:col-span-2 mt-10 px-5  sm:mt-16 sm:px-0 lg:mt-0">
-                    <div className="flex items-center gap-x-4 text-xs">
+                  <div className="lg:col-span-2 w-full mt-10 px-5  sm:mt-16 sm:px-0 lg:mt-0">
+                    <div className="flex items-center lg:justify-between gap-x-4 text-xs">
                       <p className="font-semibold text-xl text-gray-900">
                         {post.author.name}
+                      </p>
+                      <p className="text-gray-500">
+                        {format(new Date(post.createdAt), "dd/MM/yy")}
                       </p>
                       <div
                         className={`relative z-10 rounded-full text-sm bg-gray-50 px-3 py-1.5 font-medium ${
@@ -99,13 +110,9 @@ function Index(props) {
                       >
                         {post.category}
                       </div>
-
-                      <p className="text-gray-500">
-                        {format(new Date(post.createdAt), "dd/MM/yy")}
-                      </p>
                     </div>
                     <div className="group relative max-w-xl">
-                      <h3 className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
+                      <div className="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
                         <button
                           onClick={() =>
                             router.push(`/reviewPost?postId=${post.id}`)
@@ -113,8 +120,16 @@ function Index(props) {
                         >
                           {post.reviewName}
                         </button>
-                      </h3>
-                      <h1>{post.film.title}</h1>
+                      </div>
+                      <h1>
+                        {post.film.title} :
+                        {post.film.rating.length > 0
+                          ? post.film.rating.reduce(
+                              (accum, item) => accum + item.stars,
+                              0
+                            ) / post.film.rating.length
+                          : "  not rated yet"}
+                      </h1>
                       <div className="mt-5 text-sm line-clamp-3 text-gray-600">
                         <ReactMarkdown>{post.content}</ReactMarkdown>
                       </div>
@@ -124,7 +139,7 @@ function Index(props) {
                         <div className="text-sm leading-6 flex gap-5">
                           <div>
                             <button>
-                              like
+                              {post.Like.length}
                               <svg
                                 width="30px"
                                 height="30px"
@@ -144,7 +159,7 @@ function Index(props) {
 
                           <div>
                             <button>
-                              comments
+                              {post.Comment.length}
                               <svg
                                 fill="#000000"
                                 width="30px"
@@ -160,7 +175,7 @@ function Index(props) {
                             </button>
                           </div>
                           <div>
-                            {t("main:rating")}: {post.stars}/5{" "}
+                            {t("main:rating")}: {post.stars}/10{" "}
                           </div>
                         </div>
                       </div>
@@ -189,6 +204,32 @@ export async function getServerSideProps({ locale }) {
       film: {
         select: {
           title: true,
+          rating: {
+            select: {
+              stars: true,
+            },
+          },
+        },
+      },
+      Comment: {
+        select: {
+          id: true,
+        },
+      },
+      Taggings: {
+        select: {
+          tagId: true,
+          tag: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      },
+
+      Like: {
+        select: {
+          id: true,
         },
       },
     },
@@ -199,10 +240,17 @@ export async function getServerSideProps({ locale }) {
     createdAt: review.createdAt.toISOString(),
   }));
 
+  const tagCloud = await prisma.tag.findMany();
+  const serializedTagCloud = tagCloud.map((tag) => ({
+    ...tag,
+    createdAt: tag.createdAt.toISOString(),
+  }));
+
   return {
     props: {
       ...(await serverSideTranslations(locale, ["main", "common"])),
       serializedReviews,
+      serializedTagCloud,
     },
   };
 }

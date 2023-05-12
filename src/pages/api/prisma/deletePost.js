@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 
 export default async function deletePost(req, res) {
   const { postId } = req.body;
-  console.log(postId);
+
   try {
     const result = await prisma.review.delete({
       where: {

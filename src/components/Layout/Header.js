@@ -67,6 +67,7 @@ function Header() {
   const [currentLang, setCurrentLang] = useState(router.locale);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const [inputSearch, setInputSearch] = useState();
   const changeLang = (lang) => {
     const currentPath = router.asPath;
     const newPath = currentPath.replace(`/${currentLang}`, `/${lang}`);
@@ -104,12 +105,14 @@ function Header() {
             >
               {t("common:main")}
             </Link>
-            <Link
-              href="/myPage"
-              className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
-            >
-              {t("common:myPage")}
-            </Link>
+            {session ? (
+              <Link
+                href="/myPage"
+                className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
+              >
+                {t("common:myPage")}
+              </Link>
+            ) : null}
 
             {session?.user.isAdmin ? (
               <>
@@ -121,13 +124,39 @@ function Header() {
                 </Link>
               </>
             ) : null}
-            <input
-              type="text"
-              name="name"
-              id="name"
-              className="block w-3/5 rounded-full border-0 px-4 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6"
-              placeholder="Search"
-            />
+            <div className="relative w-full">
+              <div className="absolute  inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg
+                  aria-hidden="true"
+                  className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
+                </svg>
+              </div>
+              <input
+                type="search"
+                className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Search...."
+                onChange={(ev) => setInputSearch(ev.target.value)}
+              />
+              <button
+                type="submit"
+                onClick={() => router.push(`/search?search=${inputSearch}`)}
+                className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              >
+                Search
+              </button>
+            </div>
+
             <div className="flex items-center flex-col">
               <select
                 onChange={handleLangChange}
@@ -160,11 +189,11 @@ function Header() {
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
-                    class="w-6 h-6"
+                    className="w-6 h-6"
                   >
                     <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
                     />
                   </svg>
@@ -197,7 +226,6 @@ function Header() {
               className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-white"
               onClick={() => setMobileMenuOpen(true)}
             >
-              {/* <span className="sr-only">Open main menu</span> */}
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
@@ -222,7 +250,10 @@ function Header() {
               </div>
 
               <div className="flex flex-1 justify-end">
-                <Link href="#">
+                <Link
+                  href="/"
+                  className="text-md text-gray-900 dark:text-white"
+                >
                   {" "}
                   {session ? t("common:logout") : t("common:login")}
                   {session ? (
@@ -232,11 +263,11 @@ function Header() {
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
                       stroke="currentColor"
-                      class="w-6 h-6"
+                      className="w-6 h-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
                       />
                     </svg>
@@ -247,11 +278,11 @@ function Header() {
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
                       stroke="currentColor"
-                      class="w-6 h-6"
+                      className="w-6 h-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
                       />
                     </svg>
@@ -276,38 +307,74 @@ function Header() {
                 </div>
                 <div>
                   <select
-                    onChange={(ev) => {
-                      changeLang(ev.target.value);
-                    }}
-                    className="mt-2 w-32 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    onChange={handleLangChange}
+                    value={currentLang}
+                    className="mt-2 block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900  dark:ttext-gray-900 ring-1 ring-inset ring-gray-300  dark:ring-gray-200 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   >
                     <option value="en">English</option>
                     <option value="ru">Russian</option>
-                    <option value="es">Spain</option>
+                    <option value="es">Español</option>
                   </select>
                 </div>
               </div>
 
-              <input
-                type="text"
-                name="name"
-                id="name"
-                className="block w-full rounded-full border-0 px-4 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Search"
-              />
+              <div className="relative w-full">
+                <div className="absolute  inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg
+                    aria-hidden="true"
+                    className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
+                  </svg>
+                </div>
+                <input
+                  type="search"
+                  className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  onChange={(ev) => setInputSearch(ev.target.value)}
+                />
+                <button
+                  type="submit"
+                  onClick={() => router.push(`/search?search=${inputSearch}`)}
+                  className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Search
+                </button>
+              </div>
 
               <Link
                 href="/main"
+                onClick={() => setMobileMenuOpen(false)}
                 className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white hover:bg-gray-50"
               >
                 {t("common:main")}
               </Link>
-              <Link
-                href="/myPage"
-                className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-white hover:bg-gray-50"
-              >
-                {t("common:myPage")}
-              </Link>
+              {session ? (
+                <Link
+                  href="/myPage"
+                  className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
+                >
+                  {t("common:myPage")}
+                </Link>
+              ) : null}
+              {session?.user.isAdmin ? (
+                <>
+                  <Link
+                    href="/adminDashboard"
+                    className="text-md w-1/8 text-gray-900 px-3 dark:text-white"
+                  >
+                    Dashboard
+                  </Link>
+                </>
+              ) : null}
             </div>
           </Dialog.Panel>
         </Dialog>

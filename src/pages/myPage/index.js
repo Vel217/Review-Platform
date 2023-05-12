@@ -18,18 +18,23 @@ function MyPage(props) {
   const [listReviews, setListReview] = useState(props.serializedReviews);
 
   const router = useRouter();
+
   return (
     <>
       <h1 className="text-center">{t("myPage:myRev")}</h1>
 
       <div className="flex flex-col w-full  justify-center bg-white">
         <div className="w-screen px-6 mx-auto divide-y divide-gray-200 overflow-hidden  flex justify-between  rounded-lg bg-white shadow">
-          <button
-            onClick={() => router.push(`/newReview`)}
-            className="mb-2 rounded-full bg-gray-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 "
-          >
-            {t("myPage:create")}
-          </button>
+          {session ? (
+            <>
+              <button
+                onClick={() => router.push(`/newReview`)}
+                className="mb-2 rounded-full bg-gray-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 "
+              >
+                {t("myPage:create")}
+              </button>
+            </>
+          ) : null}{" "}
           <div> {session?.user.name}</div>
         </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -60,26 +65,25 @@ function MyPage(props) {
 
                       <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
                     </div>
-                    <div>
+
+                    <div className="lg:col-span-2 mt-10 w-full px-5  sm:mt-16 sm:px-0 lg:mt-0">
                       <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-x-4">
-                          <p className="font-semibold text-xl text-gray-900">
-                            {post.author.name}
-                          </p>
-                          <p className="text-gray-500">
-                            {format(new Date(post.createdAt), "dd/MM/yy")}
-                          </p>
-                          <p
-                            className={`relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium ${
-                              post.category === "neutral"
-                                ? "bg-slate-100"
-                                : post.category === "positive"
-                                ? "bg-green-100"
-                                : "bg-red-100"
-                            }`}
-                          >
-                            {post.category}
-                          </p>
+                        <p className="font-semibold text-xl text-gray-900">
+                          {post.author.name}
+                        </p>
+                        <p className="text-gray-500">
+                          {format(new Date(post.createdAt), "dd/MM/yy")}
+                        </p>
+                        <div
+                          className={`relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium ${
+                            post.category === "neutral"
+                              ? "bg-slate-100"
+                              : post.category === "positive"
+                              ? "bg-green-100"
+                              : "bg-red-100"
+                          }`}
+                        >
+                          {post.category}
                         </div>
 
                         <div className="relative z-10 rounded-full  px-3 py-1.5 font-medium bg-green-300">
@@ -100,11 +104,24 @@ function MyPage(props) {
                               router.push(`/reviewPost?postId=${post.id}`)
                             }
                           >
-                            <span className="absolute inset-0" />
                             {post.reviewName}
                           </button>
                         </h3>
-                        <h1>{post.film.title}</h1>
+
+                        <div className="flex flex-col">
+                          <div>{post.film.title}</div>
+                          <div>
+                            {t("myPage:average")}
+                            {post.film.rating.length > 0 ? (
+                              post.film.rating.reduce(
+                                (accum, item) => accum + item.stars,
+                                0
+                              ) / post.film.rating.length
+                            ) : (
+                              <> {t("myPage:notyet")}</>
+                            )}
+                          </div>
+                        </div>
                         <div className="mt-5 text-sm line-clamp-3 text-gray-600">
                           <ReactMarkdown>{post.content}</ReactMarkdown>
                         </div>
@@ -113,8 +130,8 @@ function MyPage(props) {
                         <div className="relative flex items-center gap-x-4 shrink w-full">
                           <div className="text-sm leading-6 flex gap-5 w-full">
                             <div>
-                              <button>
-                                like
+                              <button className="flex">
+                                {post.Like.length}
                                 <svg
                                   width="30px"
                                   height="30px"
@@ -133,8 +150,8 @@ function MyPage(props) {
                             </div>
 
                             <div>
-                              <button>
-                                comments
+                              <button className="flex">
+                                {post.Comment.length}
                                 <svg
                                   fill="#000000"
                                   width="30px"
